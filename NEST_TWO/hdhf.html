@@ -1,0 +1,106 @@
+def display_initial_message():
+col1, col2, col3 = st.columns([0.05, 0.9, 0.05])
+with col2:
+st.markdown("#")
+st.markdown(
+"""
+<style>
+    body {
+        background-color: #EFEFEF;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 25px auto;
+        padding: 20px;
+        background-color: #EFEFEF;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .explication {
+        background-color: #C1E1C1;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .expander {
+        background-color: #EFEFEF;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .pilier {
+        background-color: #e8f4ea;
+        padding: 20px;
+        border-radius: 10px;
+        margin-right: 10px;
+        font-size: 0.70vw;
+        flex: 1;
+        flex-basis: 0;
+        /* Added to make items equally share the space */
+    }
+
+    .pilier-explication {
+        display: flex;
+        flex-wrap: wrap;
+    }
+</style>
+<div class="container">
+    <div class="header">
+        <h1 style='text-align: center;font-size: 1.75vw;'>Votre prochaine candidature a 9 chances sur 10 d'etre d'abord
+            vu par une IA</h1>
+        <p style='text-align: center;font-size: 0.7vw;'>NEST analyse ton CV dans les conditions réelles d'une embauche
+        </p>
+    </div>
+    <div class="explication">
+        <h2 style='text-align: center;font-size: 0.7vw;'>Explication</h2>
+        <p style='text-align: center;font-size: 0.4vw;'>Nest s'assure de la lisibilité de votre CV</p>
+    </div>
+    <div class="expander">
+        <details>
+            <summary style='text-align: center;font-size: 0.75vw;'>En savoir plus sur les indispensables dans votre CV
+            </summary>
+            <div class="pilier-explication">
+                <!-- Détails des piliers ici -->
+            </div>
+        </details>
+    </div>
+</div>
+""",
+unsafe_allow_html=True,
+)
+col1, col2, col3 = st.columns([0.2, 0.6, 0.2])
+with col2:
+button_upload = st.button(
+"Chargez PDF",
+type="primary",
+disabled=not bool(uploaded_file),
+on_click=set_matching_state,
+args=(1, "upload"),
+)
+if button_upload:
+st.session_state["matching_stage"] == 1
+
+return
+
+
+
+
+
+def job_offer_parser():
+if "matching_stage" not in st.session_state:
+st.session_state["matching_stage"] = 0
+if "job_offer" in st.session_state:
+del st.session_state["job_offer"]
+if "get_all_cv_from_matching" in st.session_state:
+del st.session_state["get_all_cv_from_matching"]
+
+if st.session_state["matching_stage"] == 0:
+display_initial_message()
