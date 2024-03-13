@@ -337,12 +337,13 @@ def accueil():
         )
 
     with colonne2:
-        image = Image.open("nest_logo.png")
-        st.image(image)
-        st.markdown(
-            """
-            <h4 style='text-align: center;font-weight: bolder;font-size: 2vw;font-weight: 600;color:rgba(56,181,165,255);'> <bold> Hire with Ease </bold>  </h4>
+        st.write("")
+        # image = Image.open("nest_logo.png")
+        # st.image(image)
+        # st.markdown(
+        #     """
+        #     <h4 style='text-align: center;font-weight: bolder;font-size: 2vw;font-weight: 600;color:rgba(56,181,165,255);'> <bold> Hire with Ease </bold>  </h4>
 
-            """,
-            unsafe_allow_html=True,
-        )
+        #     """,
+        #     unsafe_allow_html=True,
+        # )
