@@ -230,7 +230,6 @@ prompt-toolkit==3.0.38
 protobuf==3.20.2
 prov==2.0.0
 psutil==5.9.4
-psycopg2==2.9.6
 psycopg2-binary==2.9.6
 ptyprocess==0.7.0
 pure-eval==0.2.2
