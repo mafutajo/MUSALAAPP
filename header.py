@@ -76,7 +76,7 @@ def header() -> str:
     # Utilisation du style défini pour l'en-tête et un sous-titre
     st.markdown(header_style, unsafe_allow_html=True)
     st.markdown(
-        '<div class="musala-headerx">MUSALA</div>',
+        '<div class="musala-headerx">NEST</div>',
         unsafe_allow_html=True,
     )
     if "menu_option_integer" not in st.session_state:
@@ -136,7 +136,7 @@ def header() -> str:
             None,
             [
                 "Accueil",
-                "MUSALA",
+                "NEST IA",
                 "Qui sommes nous?",
             ],
             icons=[
@@ -206,140 +206,103 @@ def accueil():
         """,
         unsafe_allow_html=True,
     )
-    colonne1, colonne2 = st.columns((0.8, 0.2))
+    voxlone, colonne1, colonne2 = st.columns([0.2, 0.8, 0.2], gap="small")
     with colonne1:
-        style = """
-            <style>
-                .musala-content {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 2vw;
-                    font-family: 'Roboto', sans-serif;
-                }
-                .musala-column {
-                    flex-basis: calc(50% - 4vw); /* Prendre la moitié de l'espace disponible, moins l'espacement */
-                    background-image: linear-gradient(to bottom, #1B4F72, #88bdbc);
-                    padding: 2vw;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                    margin: 1vw;
-                }
-                .musala-header {
-                    color: white;
-                    font-size: 2vw;
-                    margin-bottom: 1vw;
-                    text-align: center;
-                }
-               
-                .musala-text2 {
-                    font-size: 1.0vw;
-                    color: white;
-                    line-height: 1.5;
-                }
-                .musala-button {
-                    display: block; /* Les boutons s'affichent comme des blocs */
-                    width: 100%; /* Les boutons prennent toute la largeur */
-                    padding: 10px;
-                    margin: 10px 0; /* Marge au-dessus et en dessous du bouton */
-                    border: none;
-                    border-radius: 5px;
-                    color: white;
-                    
-                    cursor: pointer;
-                    text-align: center;
-                    text-decoration: none;
-                }
-                .musala-button:hover {
-                    background-color:#FFFFFF;
-                }
-                @media (max-width: 768px) {
-                    .musala-content {
-                        flex-direction: column;
-                    }
-                    .musala-column {
-                        flex-basis: 100%;
-                        margin: 0 0 2vw 0;
-                    }
-                    .musala-header {
-                        font-size: 4vw;
-                    }
-                    .musala-text {
-                        font-size: 2vw;
-                    }
-                }
-            </style>
-            """
-
-        # HTML pour les deux colonnes avec le contenu et les boutons
-        content = """
-            <div class="musala-content">
-                <div class="musala-column">
-                    <h2 class="musala-header">Explorez avec MISALA NETWORK</h2>
-                    <p class="musala-text2">
-                        MUSALA consulte plus de 100,000 postes à chaque requête, vous offrant un accès sans précédent aux opportunités d'emploi. Notre IA analyse votre CV et le marché pour trouver les correspondances parfaites, maximisant ainsi vos chances de succès.
-                    </p> <br>
-                    <a class="musala-button" href="javascript:void(0);" onclick="alert('En savoir plus sur MISALA NETWORK')"></a>
-                </div>
-                <div class="musala-column">
-                    <h2 class="musala-header">Disclaimer</h2>
-                    <p class="musala-text2">
-                         MUSALA s'adapte à divers métiers, mais excelle spécifiquement dans le Développement de logiciels, l'Ingénierie des données et le Développement web. Nos algorithmes, affinés pour ces secteurs, optimisent la mise en relation entre talents et opportunités. Ainsi, les professionnels de ces domaines bénéficient d'une expérience enrichie, renforcée par notre engagement en recherche et développement. MUSALA se positionne comme la plateforme idéale pour les experts cherchant à avancer dans ces carrières dynamiques et en évolution constante.
-                    </p>
-                    <a class="musala-button" href="javascript:void(0);" onclick="alert('Lire le disclaimer')"></a>
-                </div>
-            </div>
-            """
-
-        # Afficher le style et le contenu dans Streamlit
-        st.markdown(style + content, unsafe_allow_html=True)
-
+        # HTML/CSS personnalisé pour le reste de la page d'accueil
         st.markdown(
             """
-        <style>
-        /* Styliser tous les boutons de Streamlit */
-        .stButton>button {
-            border: 2px solid #1a73e8; /* Bordure bleue */
-            border-radius: 20px; /* Bords arrondis */
-            color: white; /* Texte blanc */
-            font-size: 16px; /* Taille de police */
-            font-weight: bold; /* Gras */
-            background-color: #1a73e8; /* Arrière-plan bleu */
-            padding: 10px 24px; /* Padding intérieur */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Ombre douce */
-            transition: background-color 0.3s, box-shadow 0.3s; /* Transition douce */
-        }
-        .stButton>button:hover {
-            background-color: #0f62fe; /* Couleur au survol */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Ombre plus prononcée au survol */
-        }
-        </style>
-        """,
+                <style>
+                    body {
+                        background-color: #F4F4F4; /* Couleur de fond légère */
+                        text-align: center;
+                    }
+                    .container {
+                        max-width: 1000px;
+                        margin: 25px auto;
+                        padding: 20px;
+                        background-color: #FFFFFF; /* Fond blanc pour le contenu */
+                        border-radius: 10px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Ombre douce */
+                    }
+                    .header, .explication, h1, h2, summary {
+                        color: #34495E; /* Gris Anthracite pour les textes */
+                    }
+                    .explication {
+                        background-color: #DAE8FC; /* Couleur subtile pour les sections d'explication */
+                        padding: 20px;
+                        border-radius: 10px;
+                        margin-bottom: 20px;
+                    }
+                    .axe-analyse-explication {
+                        display: flex;
+                        flex-wrap: wrap;
+                        
+                        justify-content: space-between;
+                    }
+                    .axe-analyse {
+                        flex: 1;
+                        background-color: #DAE8FC;
+                        margin: 10px;
+                        font-size: 0.9em;
+                        text-align: center;
+                        /* Vert clair pour les axes d'analyse */
+                        padding: 20px;
+                        border-radius: 10px;
+                    }
+                    p {
+                        color: #000000; /* Texte noir pour une meilleure lisibilité */
+                    }
+                </style>
+                <div class="container">
+                    <div class="header">
+                        <h1>Optimisez votre parcours professionnel avec NEST</h1>
+                        <p>Découvrez comment NEST valorise chaque aspect de votre profil pour une opportunité sur mesure.</p>
+                    </div>
+                    <div class="explication">
+                        <h2>Les axes d'analyse NEST</h2>
+                        <p>Chez NEST, nous utilisons des axes d'analyse spécifiques pour aligner vos compétences et aspirations avec les opportunités de carrière idéales.</p>
+                    </div>
+                    <div class="expander">
+                        <details>
+                            <summary>Explorez les axes d'analyse clés selon NEST</summary>
+                            <div class="axe-analyse-explication">
+                                <div class="axe-analyse">
+                                    <h3>Formation Académique</h3>
+                                    <p>Une mise en valeur de votre parcours éducatif souligne la base de vos connaissances et compétences.</p>
+                                </div>
+                                <div class="axe-analyse">
+                                    <h3>Compétences Comportementales</h3>
+                                    <p>Les soft skills sont cruciales pour démontrer votre capacité à évoluer dans divers environnements de travail.</p>
+                                </div>
+                                <div class="axe-analyse">
+                                    <h3>Compétences Techniques</h3>
+                                    <p>Vos hard skills et outils technologiques maîtrisés reflètent votre aptitude à répondre aux exigences spécifiques du poste.</p>
+                                </div>
+                                  <div class="axe-analyse">
+                            <h3>Langues Parlées</h3>
+                            <p>L'aptitude à communiquer dans plusieurs langues est un atout précieux dans un contexte professionnel globalisé.</p>
+                        </div>
+                        <div class="axe-analyse">
+                            <h3>Localisation & Mobilité</h3>
+                            <p>La flexibilité géographique et la disposition à la mobilité peuvent ouvrir des portes à des opportunités uniques.</p>
+                        </div>
+                        <div class="axe-analyse">
+                                    <h3>Expérience Professionnelle</h3>
+                                    <p>Votre historique de travail et les réussites professionnelles montrent votre évolution et l'impact dans vos rôles précédents.</p>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+                """,
             unsafe_allow_html=True,
         )
-
-    _, col2, col3 = st.columns([0.2, 0.4, 0.4])
-
-    with col2:
-        st.button(
-            " EN QUETE D'OPPORTUNITE ",
-            on_click=set_menu_option_integer,
-            args=(1,),
-            help="Je trouve mon opportunitée",
-            key="button1",  # Assurez-vous que la clé est unique
-        )
-    with col3:
-        st.button(
-            "Découvrez qui est derierre MUSALA ",
-            on_click=set_menu_option_integer,
-            args=(2,),
-            help="Découvre qui est derierre MUSALA NETWORK",
-            key="button2",  # Assurez-vous que la clé est unique
-        )
-
     with colonne2:
-        st.write("")
-        # image = Image.open("nest_logo.png")
-        # st.image(image)
+        st.write("#")
+        st.write("#")
+        st.write("#")
+        image = Image.open("nest_logo.png")
+        st.image(image)
         # st.markdown(
         #     """
         #     <h4 style='text-align: center;font-weight: bolder;font-size: 2vw;font-weight: 600;color:rgba(56,181,165,255);'> <bold> Hire with Ease </bold>  </h4>

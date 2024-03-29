@@ -4,7 +4,7 @@ import base64
 from pdfminer.high_level import extract_text
 
 st.set_page_config(
-    page_title="MUSALA", layout="wide", page_icon="nest_logo-transformed.png"
+    page_title="NEST", layout="wide", page_icon="nest_logo-transformed.png"
 )
 from header import header, accueil
 from matching import job_offer_parser
@@ -17,7 +17,7 @@ selected = header()
 if selected == "Accueil":
     accueil()
 
-if selected == "MUSALA":
+if selected == "NEST IA":
     job_offer_parser(selected)
 
 # ########### PAGE DE GESTION ########################

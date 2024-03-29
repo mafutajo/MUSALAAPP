@@ -306,7 +306,9 @@ def on_match_button_click(offres):
 
     parsed_offres = []  # Liste pour stocker les offres après parsing
 
-    with st.spinner("PARSING des offres sélectionnées en cours..."):
+    with st.spinner(
+        "**:green[Nous analysons les besoins specifiques à ces opportunitées...]**"
+    ):
         # Initialisation de la liste pour les offres parsées
         parsed_offres = []
 
@@ -378,7 +380,7 @@ def on_match_button_click(offres):
 
         st.session_state["parsed_offres"] = parsed_offres
 
-    with st.spinner("Matching des offres avec le CV en cours..."):
+    with st.spinner("**:blue[Nous trouvons vos atouts pour ces opportunités]**"):
         # Réalisation du matching pour chaque offre parsée avec le CV
         result_matching = [
             cache_matching(parsed_text, parsed_offre) for parsed_offre in parsed_offres
@@ -426,102 +428,100 @@ def afficher_messages():
 
 def display_initial_message():
     if st.session_state.get("matching_stage", 0) == 0:
-        col1, col2, col3 = st.columns([0.05, 0.9, 0.05])
+        col1, col2, col3 = st.columns([0.15, 0.7, 0.15])
         with col2:
             st.markdown("#")
-            st.markdown(
-                """
-                <style>
-                    body {
-                        background-color: #F4F4F4; /* Couleur de fond légère */
-                        text-align: center;
-                    }
-                    .container {
-                        max-width: 1000px;
-                        margin: 25px auto;
-                        padding: 20px;
-                        background-color: #FFFFFF; /* Fond blanc pour le contenu */
-                        border-radius: 10px;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Ombre douce */
-                    }
-                    .header, .explication, h1, h2, summary {
-                        color: #34495E; /* Gris Anthracite pour les textes */
-                    }
-                    .explication {
-                        background-color: #DAE8FC; /* Couleur subtile pour les sections d'explication */
-                        padding: 20px;
-                        border-radius: 10px;
-                        margin-bottom: 20px;
-                    }
-                    .axe-analyse-explication {
-                        display: flex;
-                        flex-wrap: wrap;
-                        
-                        justify-content: space-between;
-                    }
-                    .axe-analyse {
-                        flex: 1;
-                        background-color: #DAE8FC;
-                        margin: 10px;
-                        font-size: 0.9em;
-                        text-align: center;
-                        /* Vert clair pour les axes d'analyse */
-                        padding: 20px;
-                        border-radius: 10px;
-                    }
-                    p {
-                        color: #000000; /* Texte noir pour une meilleure lisibilité */
-                    }
-                </style>
-                <div class="container">
-                    <div class="header">
-                        <h1>Optimisez votre parcours professionnel avec Musala</h1>
-                        <p>Découvrez comment Musala valorise chaque aspect de votre profil pour une opportunité sur mesure.</p>
-                    </div>
-                    <div class="explication">
-                        <h2>Les axes d'analyse Musala</h2>
-                        <p>Chez Musala, nous utilisons des axes d'analyse spécifiques pour aligner vos compétences et aspirations avec les opportunités de carrière idéales.</p>
-                    </div>
-                    <div class="expander">
-                        <details>
-                            <summary>Explorez les axes d'analyse clés selon Musala</summary>
-                            <div class="axe-analyse-explication">
-                                <div class="axe-analyse">
-                                    <h3>Formation Académique</h3>
-                                    <p>Une mise en valeur de votre parcours éducatif souligne la base de vos connaissances et compétences.</p>
-                                </div>
-                                <div class="axe-analyse">
-                                    <h3>Compétences Comportementales</h3>
-                                    <p>Les soft skills sont cruciales pour démontrer votre capacité à évoluer dans divers environnements de travail.</p>
-                                </div>
-                                <div class="axe-analyse">
-                                    <h3>Compétences Techniques</h3>
-                                    <p>Vos hard skills et outils technologiques maîtrisés reflètent votre aptitude à répondre aux exigences spécifiques du poste.</p>
-                                </div>
-                                  <div class="axe-analyse">
-                            <h3>Langues Parlées</h3>
-                            <p>L'aptitude à communiquer dans plusieurs langues est un atout précieux dans un contexte professionnel globalisé.</p>
-                        </div>
-                        <div class="axe-analyse">
-                            <h3>Localisation & Mobilité</h3>
-                            <p>La flexibilité géographique et la disposition à la mobilité peuvent ouvrir des portes à des opportunités uniques.</p>
-                        </div>
-                        <div class="axe-analyse">
-                                    <h3>Expérience Professionnelle</h3>
-                                    <p>Votre historique de travail et les réussites professionnelles montrent votre évolution et l'impact dans vos rôles précédents.</p>
-                                </div>
-                            </div>
-                        </details>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            st.markdown("#")
+            matching_process_html_with_intro = """
+            <style>
+                .matching-container {
+                    display: flex;
+                    justify-content: space-around;
+                    flex-wrap: wrap;
+                    gap: 10px; /* Espacement entre les éléments */
+                    text-align:center;
+                }
+                details {
+                    flex-basis: 30%; /* Ajustez selon l'espace désiré autour des éléments */
+                    border: 1px solid #DAE8FC;
+                    border-radius: 10px;
+                    padding: 10px;
+                    background-color: #DAE8FC;
+                    cursor: pointer;
+                }
+                summary {
+                    font-weight: bold;
+                    font-size: 1.0vw;
+                    color: #34495E; /* Couleur du texte pour les titres */
+                }
+                p {
+                    font-size: 0.9vw;
+                    color: #000000; /* Texte noir pour une meilleure lisibilité */
+                }
+            
+                .intro-text {
+                    margin-bottom: 30px; /* Espacement avant la section des étapes */
+                    color: #34495E; /* Couleur du texte pour l'introduction */
+                    font-size: 2.9vw;
+                    text-align: center;
+                }
+            </style>
+
+            <div class="intro-text">
+                <p style="font-size: 1.3vw; color: #34495E;">
+                    Dans un monde où 80% des processus de recrutement sont désormais assistés par l'intelligence artificielle et des outils numériques de filtrage, comprendre et maîtriser ces technologies devient essentiel.<br>
+                    Découvrez comment maximiser vos chances dans ce nouvel écosystème de recrutement :
+                </p>
+            </div>
+
+            <div class="matching-container">
+                <details>
+                    <summary>1. Évaluation de vos compétences</summary>
+                    <p><br>Votre CV est analysé de manière approfondie pour prendre connaissance de vos capacités.<br>  Prise de connaissance de vos skills et de vos differentes éxperiences et dommaine d'expertise.</p>
+                </details>
+                <details>
+                    <summary>2. Sélectionnez vos opportunités </summary>
+                    <p><br>Choisissez les offres parmis plus de 100 000 offres  qui vous intéressent en utilisant les filtres suivant vos besoins, type de contrat ou contraintes de mobilité et d'expérience.</p>
+                </details>
+                <details>
+                    <summary>3. Exploration des compatibilités</summary>
+                    <p><br>Nest trouve les points forts de votre candidature et les différentes opportunitées qui vous correspondent le mieux.</p>
+                </details>
+            </div>
+            """
+
+            # Afficher le contenu sur la page Streamlit
+            st.markdown(matching_process_html_with_intro, unsafe_allow_html=True)
+
+        st.markdown("#")
+        st.markdown(
+            """
+        <style>
+            .upload-instruction {
+                font-size: 1.7vw;
+                color: #34495E; /* Adaptez cette valeur à la couleur désirée */
+                text-align:center;
+                font-weight: bolder;
+            }
+        </style>
+
+        <div class="upload-instruction">
+            Commençons par prendre connaissance de votre profil<br>  
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
         col1, col2, col3 = st.columns([0.2, 0.6, 0.2])
         with col2:
             uploaded_file = st.file_uploader(" ", type="pdf")
+        col1, col2, col3 = st.columns([0.35, 0.3, 0.35], gap="large")
+        with col2:
+            st.markdown("#")
+            st.markdown("#")
+
             bouton_validation = st.button("Lancez la recherche")
             if uploaded_file is not None and bouton_validation is not None:
+                st.empty()
                 # Stockez temporairement le fichier pour éviter la perte lors du rechargement
                 st.session_state["temp_uploaded_file"] = uploaded_file
                 st.session_state["fichier_telecharger"] = 1
@@ -686,17 +686,18 @@ def afficher_offres_emploi(
     col1, col2 = st.columns([5, 1])
     with col2:
         bouton_disabled = not st.session_state["indices_selectionnes"]
-        if st.button("Matchez!", disabled=bouton_disabled):
-            # st.write(offres)
+        match_but = st.button("Matchez !", disabled=bouton_disabled)
+    if match_but:
+        # st.write(offres)
 
-            # st.rerun()
-            on_match_button_click(offres)
+        # st.rerun()
+        on_match_button_click(offres)
 
-            # Réinitialisez l'étape pour revenir au téléchargement
-            # Votre logique de traitement ici...
+        # Réinitialisez l'étape pour revenir au téléchargement
+        # Votre logique de traitement ici...
 
-            # Utilisez st.experimental_rerun() pour forcer le script à s'exécuter à nouveau depuis le début
-            st.rerun()
+        # Utilisez st.experimental_rerun() pour forcer le script à s'exécuter à nouveau depuis le début
+        st.rerun()
 
     # Calculer si le maximum de sélections est atteint
     max_selection_atteint = len(st.session_state["indices_selectionnes"]) > 5
@@ -913,14 +914,12 @@ def generate_stars_for_seniority(years_of_experience):
 def afficher_infos_candidat(data):
     st.write("#")
     st.write("#")
-    st.write("#")
-    st.write("#")
 
     html_content = f"""
     <style>
         .candidat-container {{
             font-family: Arial, sans-serif;
-            background-color: #F4F4F4; /* Fond gris clair */
+            background-color: #E0E0E0; /* Fond gris clair */
             border-radius: 20px;
             box-shadow: 0px 8px 8px rgba(0,0,0,0.1); /* Ombre plus douce */
             padding: 20px;
@@ -929,7 +928,7 @@ def afficher_infos_candidat(data):
         }}
         .candidat-title {{
             font-size: 24px;
-            font-weight: bold;
+            font-weight: bolder;
             color: #1B4F72; /* Bleu Musala */
             margin-bottom: 20px;
         }}
@@ -947,7 +946,9 @@ def afficher_infos_candidat(data):
             font-size: 16px;
             line-height: 1.5;
             text-align: center;
-            color: #34495E; /* Gris foncé pour le texte */
+            font-weight: bold;
+            color:black;
+            
         }}
     </style>
     <div class="candidat-container">
@@ -1051,8 +1052,10 @@ def display_parsed_cv():
         # progress_text = "Operation in progress. Please wait."
 
         st.empty()
-        with st.spinner("Parsing du CV en cours..."):
-            if st.button("Chargement de CV"):
+        with st.spinner(
+            "**Prenons le temps de nous connaitre... cela nous prendra moins d'une minute** "
+        ):
+            if st.button("Retour au choix du CV"):
                 # Réinitialisez l'étape pour revenir au téléchargement
                 st.session_state["matching_stage"] = 0
                 if "temp_uploaded_file" in st.session_state:

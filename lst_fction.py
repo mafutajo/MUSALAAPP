@@ -35,6 +35,7 @@ import joblib
 
 import fitz
 import os
+import difflib
 
 
 @st.cache_resource(show_spinner="Chargement...")
@@ -74,12 +75,105 @@ def chargement_hardfit_():
     )
 
 
+def afficher_conseil_diplome(note_tache):
+    if note_tache < 0:
+        return st.markdown(
+            f"""
+    <div style="cursor: pointer;font-weight:bold;border-color: red; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.8vw; color: rgb(44,63,102); text-align: center;">
+        Ce pilier n'est pas specifié dans cette opportunité
+    </div>
+    """,
+            unsafe_allow_html=True,
+        )
+    if note_tache >= 100:
+        couleur_degrade = "rgba(56,181,165,255)"  # Vert foncé
+
+        html_content = f"""
+        <div style="cursor: pointer; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.8vw; color: rgb(44,63,102); text-align: center;">
+            <span style="font-size:0.8vw;color:{couleur_degrade};font-weight:bold;"> Vous semblez suffisament qualifié.e</span>
+        </div>
+        """
+
+        return st.markdown(html_content, unsafe_allow_html=True)
+    else:
+        couleur_degrade = "#FA8072"  # Rouge
+        html_content = f"""
+        <div style="cursor: pointer; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.7vw; color: rgb(44,63,102); text-align: center;">
+            <span style="font-size:0.8vw;color:{couleur_degrade};font-weight:bold;">Vous ne semblez pas assez qualifié.e</span>
+        </div>
+        """
+
+        return st.markdown(html_content, unsafe_allow_html=True)
+
+
+def afficher_conseil_langue(note_tache):
+    if note_tache < 0:
+        return st.markdown(
+            f"""
+    <div style="cursor: pointer;font-weight:bold;border-color: red; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.8vw; color: rgb(44,63,102); text-align: center;">
+        Ce pilier n'est pas specifié dans cette opportunité
+    </div>
+    """,
+            unsafe_allow_html=True,
+        )
+    if note_tache >= 100:
+        couleur_degrade = "rgba(56,181,165,255)"  # Vert foncé
+
+        html_content = f"""
+        <div style="cursor: pointer; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.8vw; color: rgb(44,63,102); text-align: center;">
+            <span style="font-size:0.8vw;color:{couleur_degrade};font-weight:bold;"> Vous avez la maitrise linguistique</span>
+        </div>
+        """
+
+        return st.markdown(html_content, unsafe_allow_html=True)
+    else:
+        couleur_degrade = "#FA8072"  # Rouge
+        html_content = f"""
+        <div style="cursor: pointer; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.7vw; color: rgb(44,63,102); text-align: center;">
+            <span style="font-size:0.8vw;color:{couleur_degrade};font-weight:bold;">Vous n'avez pas la maitrise linguistique</span>
+        </div>
+        """
+
+        return st.markdown(html_content, unsafe_allow_html=True)
+
+
+def afficher_conseil_experience(note_tache):
+    if note_tache < 0:
+        return st.markdown(
+            f"""
+    <div style="cursor: pointer;font-weight:bold;border-color: red; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.8vw; color: rgb(44,63,102); text-align: center;">
+        Ce pilier n'est pas specifié dans cette opportunité
+    </div>
+    """,
+            unsafe_allow_html=True,
+        )
+    if note_tache >= 100:
+        couleur_degrade = "rgba(56,181,165,255)"  # Vert foncé
+
+        html_content = f"""
+        <div style="cursor: pointer; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.8vw; color: rgb(44,63,102); text-align: center;">
+            <span style="font-size:0.8vw;color:{couleur_degrade};font-weight:bold;"> Vous semblez etre suffisament experimenté.e</span>
+        </div>
+        """
+
+        return st.markdown(html_content, unsafe_allow_html=True)
+    else:
+        couleur_degrade = "#FA8072"  # Rouge
+        html_content = f"""
+        <div style="cursor: pointer; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.7vw; color: rgb(44,63,102); text-align: center;">
+            <span style="font-size:0.8vw;color:{couleur_degrade};font-weight:bold;">Vous ne semblez pas assez experimenté.e</span>
+        </div>
+        """
+
+        return st.markdown(html_content, unsafe_allow_html=True)
+
+
 def afficher_conseil(note_tache: float):
     if note_tache < 0:
         return st.markdown(
             f"""
     <div style="cursor: pointer;font-weight:bold;border-color: red; padding: 0px; border-radius: 6px;margin-bottom: 0;  font-size: 0.8vw; color: rgb(44,63,102); text-align: center;">
-        Ce pilier n'est pas specifié dans cette opportunité.
+        Ce pilier n'est pas specifié dans cette opportunité
     </div>
     """,
             unsafe_allow_html=True,
@@ -133,75 +227,6 @@ def afficher_conseil_stack(note_stack: float):
     """
 
     st.markdown(html_content, unsafe_allow_html=True)
-
-
-def afficher_conseil_diplome(note_diplome: float):
-    if note_diplome > 100:
-        conseil = "Vous êtes surdiplômé pour ce poste. Cela peut être à la fois un atout et un défi à communiquer."
-        couleur_degrade = "rgba(56,181,165,255)"
-    elif note_diplome == 100:
-        conseil = "Votre niveau de diplôme est parfaitement adapté à ce poste."
-        couleur_degrade = "rgba(56,181,165,255)"
-    else:
-        conseil = "Votre niveau de diplôme est inférieur aux attentes pour ce poste. Mettez en avant vos expériences et compétences."
-        couleur_degrade = "#ff7f00"
-
-    html_content = f"""
-    <details style="cursor: pointer; background: linear-gradient(to right, {couleur_degrade}, {couleur_degrade}); padding: 10px; border-radius: 6px; font-size: 0.8vw;">
-        <summary>l'avis NEST</summary>
-        {conseil}
-    </details>
-    """
-
-    st.markdown(html_content, unsafe_allow_html=True)
-
-
-def afficher_conseil_langue(note_langue: float):
-    if note_langue >= 85:
-        conseil = "Votre maîtrise de la langue est parfaitement alignée avec les exigences linguistiques du poste."
-        couleur_fond = "#b8e994"  # Vert clair
-    elif note_langue >= 70:
-        conseil = "Vous avez une bonne maîtrise de la langue, proche des attentes du poste, avec une marge pour une optimisation."
-        couleur_fond = "#f9ed69"  # Jaune
-    elif note_langue >= 55:
-        conseil = "Votre niveau de langue est suffisant mais nécessite une amélioration pour correspondre pleinement aux besoins du poste."
-        couleur_fond = "#f08a5d"  # Orange
-    else:
-        conseil = "Il y a une incompatibilité notable entre votre niveau de langue et les attentes pour ce poste. Une amélioration est conseillée."
-        couleur_fond = "#f38181"  # Rouge clair
-
-    html_content = f"""
-    <details style="cursor: pointer; background-color: {couleur_fond}; padding: 10px; border-radius: 6px; font-size: 0.8vw;">
-        <summary>l'avis NEST</summary>
-        {conseil}
-    </details>
-    """
-
-    return st.markdown(html_content, unsafe_allow_html=True)
-
-
-def afficher_conseil_softskills(note_competences: float):
-    if note_competences >= 85:
-        conseil = "Votre profil démontre une excellente adéquation avec les qualités interpersonnelles recherchées pour ce poste."
-        couleur_fond = "#b8e994"  # Vert clair
-    elif note_competences >= 70:
-        conseil = "Votre profil montre une bonne adéquation, avec un potentiel de renforcement pour atteindre une compatibilité optimale."
-        couleur_fond = "#f9ed69"  # Jaune
-    elif note_competences >= 55:
-        conseil = "Il existe une adéquation modérée entre vos qualités interpersonnelles et les attentes du poste. Une amélioration ciblée pourrait être bénéfique."
-        couleur_fond = "#f08a5d"  # Orange
-    else:
-        conseil = "Une divergence significative est observée entre vos compétences interpersonnelles et les besoins du poste. Un développement ciblé est recommandé."
-        couleur_fond = "#f38181"  # Rouge clair
-
-    html_content = f"""
-    <details style="cursor: pointer; background-color: {couleur_fond}; padding: 10px; border-radius: 6px; font-size: 0.8vw;">
-        <summary>l'avis NEST</summary>
-        {conseil}
-    </details>
-    """
-
-    return st.markdown(html_content, unsafe_allow_html=True)
 
 
 @st.cache_resource
@@ -563,6 +588,11 @@ def estimated_duration(listed):
         return abs(int(listed[0]) - int(listed[1])) + 1
     else:
         return -2
+
+
+model_sim = model_sim_()
+
+model_loaded = model_loaded_()
 
 
 def close_enough(index_number, resultats, tresh):
@@ -1118,197 +1148,37 @@ def name_choice(sortie, text):
             return [sortie["nom_prenom"][0]]
 
 
-# def parsing_joboffer(
-#     text_cv: str | st.runtime.uploaded_file_manager.UploadedFile,
-# ) -> dict:
-#     # text_cv=text_cv.encode("ascii", "ignore").decode()
-#     if not isinstance(text_cv, str):
-#         bytes_content: bytes = text_cv.read()
-#         text_cv: str = extract_text(io.BytesIO(bytes_content)).replace("\x00", "\uFFFD")
-#     """concatenation de toutes les fonctions et creation de la sortie"""
-#     listed_text_cv = [
-#         x for x in list(filter(None, transform(text_cv))) if not has_useless_text(x)
-#     ]
-
-#     base = [listed_text_cv[i : i + 32] for i in range(0, len(listed_text_cv), 32)]
-
-#     Parseur = model_parseur_()
-
-#     predict_text, raw = Parseur.predict(base, split_on_space=False)
-
-#     base_data = MEF_alternatif_1(list(itertools.chain.from_iterable(predict_text)))
-#     # display(base_data)
-#     base_data["tf"] = base_data["WORD"].apply(lambda x: has_useless_text(x))
-#     base_data = base_data[["WORD", "TAG"]]  # [base_data["tf"] == False]
-
-#     final_version = collapse(base_data)
-
-#     sortie = MEF_final(final_version)
-
-#     sortie.update(
-#         raw_text=text_cv,
-#     )
-
-#     sortie.update(
-#         numero=extract_telephone(text_cv),
-#     )
-
-#     sortie.update(mail=re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", text_cv))
-
-#     sortie.update(
-#         langue=[
-#             element.replace(".", "")
-#             for element in filter_substring(
-#                 sortie["langue"],
-#                 base_data[base_data["TAG"] == "B-LANGUE"]["WORD"].to_list(),
-#             )
-#         ]
-#     )
-
-#     # sortie.update(nom_prenom=name_choice(sortie["nom_prenom"], text_cv))
-#     sortie.update(nom_prenom=name_choice(sortie, text_cv))
-
-#     sortie.update(
-#         tache=clean_list(
-#             filter_substring(
-#                 sortie["tache"],
-#                 base_data[base_data["TAG"] == "B-TACHE"]["WORD"].to_list(),
-#             )
-#         )
-#     )
-
-#     sortie.update(tache=[y for y in sortie["tache"] if len(y.split()) > 1])
-
-#     sortie.update(id_pdf_hashed=hashlib.md5(text_cv.encode("utf-8")).hexdigest())
-
-#     sortie.update(
-#         road_to_image="/Users/tuyindig/Documents/Nest_app/nest-app/"
-#         + sortie["id_pdf_hashed"]
-#     )
-
-#     sortie.update(
-#         tache=clean_task(clean_task(list(dict.fromkeys(clean_task(sortie["tache"])))))
-#     )
-
-#     sortie.update(
-#         diplome=filter_substring(
-#             sortie["diplome"],
-#             base_data[base_data["TAG"] == "B-DIPLÔME"]["WORD"].to_list(),
-#         )
-#     )
-#     sortie.update(
-#         nom_prenom=combine_consecutive_words_in_text(text_cv, sortie["nom_prenom"])
-#     )
-#     sortie.update(
-#         diplome=clean_task(clean_task(clean_task(clean_task(sortie["diplome"]))))
-#     )
-
-#     sortie.update(ecole=clean_task(clean_task(clean_task(clean_task(sortie["ecole"])))))
-
-#     sortie.update(soft_skills=clean_task(clean_task(clean_task(sortie["soft_skills"]))))
-#     sortie.update(location=[trouver_region_gagnante(sortie["adresse"])])
-#     print(sortie)
-#     common_eror = [
-#         "d’une",
-#         "mémoire",
-#         "qualité",
-#         "observation",
-#         "orthographique",
-#         "nature",
-#         "active",
-#         "prendre",
-#         "faire",
-#         "haute",
-#         "efficacement",
-#         "expression",
-#         "stress",
-#         "capacités",
-#         "équipe",
-#         "etre",
-#         "sens",
-#         "travail",
-#         "force",
-#         "esprit",
-#         "analyse",
-#         "apprendre",
-#         "capacité",
-#         "travailler",
-#         "realation",
-#         "oral",
-#         "ecris",
-#         "aise",
-#         "clientèle",
-#         "problèmes",
-#         "synthèse",
-#         "etre",
-#         "très",
-#         "avec",
-#         "dans",
-#         "rapidement",
-#         "forte",
-#         "ecris",
-#         "tres",
-#         "voix",
-#         "capacites a",
-#         "etre",
-#         "equipe",
-#         "savoir",
-#         "preuve",
-#         "precision",
-#         "service",
-#         "bonne",
-#         "excellent",
-#         "analytique",
-#         "esprit d'",
-#         "excellentes",
-#         "capacite a",
-#         "maniere",
-#         "qualites d'",
-#         "sens du",
-#         "envie de",
-#         "prise",
-#         "office",
-#         "esprit",
-#     ]
-#     sortie.update(
-#         soft_skills=[x for x in sortie["soft_skills"] if x not in common_eror]
-#     )
-
-#     sortie.update(
-#         post=filter_substring(
-#             sortie["post"],
-#             base_data[base_data["TAG"] == "B-POST"]["WORD"].to_list(),
-#         )
-#     )
-
-#     sortie.update(post=clean_task(clean_task(clean_task(clean_task(sortie["post"])))))
-#     sortie.update(parcours_pro=recreate_experience(sortie, text_cv)),
-
-#     predictor = chargement_hardfit_()
-
-#     sortie.update(job_type=predictor.predict(text_cv)[0][0])
-
-#     sortie.update(parcours_scolaire=recreate_experience_school(sortie, text_cv))
-
-#     sortie.update(
-#         time_in_field=experience_in_field(sortie["parcours_pro"], sortie["job_type"])
-#     )
-
-#     sortie = traiter_skills_dict(sortie)
-
-#     return sortie
-
-
 def sliding_window(listed_text_cv, window_size, overlap):
     """
     Applique un fenêtrage glissant sur la liste de segments de texte.
     """
     base = []
+
     step = window_size - overlap
     for i in range(0, len(listed_text_cv), step):
         window = listed_text_cv[i : i + window_size]
         base.append(window)
     return base
+
+
+def est_similaire(a, b, seuil=0.9):
+    """Vérifie si deux chaînes sont similaires au-dessus d'un seuil donné."""
+    return difflib.SequenceMatcher(None, a, b).ratio() > seuil
+
+
+def filtrer_et_dedoublonner(liste_taches):
+    # Filtrer les tâches ayant plus d'un mot
+    taches_filtrees = [tache for tache in liste_taches if len(tache.split()) > 1]
+
+    # Dédoublonner les tâches basées sur la similarité
+    taches_uniques = []
+    for tache in taches_filtrees:
+        if not any(
+            est_similaire(tache, tache_existante) for tache_existante in taches_uniques
+        ):
+            taches_uniques.append(tache)
+
+    return taches_uniques
 
 
 def parsing_joboffer(
@@ -1322,8 +1192,8 @@ def parsing_joboffer(
         x for x in list(filter(None, transform(text_cv))) if not has_useless_text(x)
     ]
 
-    window_size = 32
-    overlap = 10
+    window_size = 50
+    overlap = 25
     base = sliding_window(listed_text_cv, window_size, overlap)
 
     print(base)
@@ -1380,14 +1250,14 @@ def parsing_joboffer(
     # sortie.update(nom_prenom=name_choice(sortie["nom_prenom"], text_cv))
     sortie.update(nom_prenom=name_choice(sortie, text_cv))
 
-    sortie.update(
-        tache=clean_list(
-            filter_substring(
-                sortie["tache"],
-                base_data[base_data["TAG"] == "B-TACHE"]["WORD"].to_list(),
-            )
-        )
-    )
+    # sortie.update(
+    #     tache=clean_list(
+    #         filter_substring(
+    #             sortie["tache"],
+    #             base_data[base_data["TAG"] == "B-TACHE"]["WORD"].to_list(),
+    #         )
+    #     )
+    # )
 
     sortie.update(tache=[y for y in sortie["tache"] if len(y.split()) > 1])
 
@@ -1398,9 +1268,10 @@ def parsing_joboffer(
         + sortie["id_pdf_hashed"]
     )
 
-    sortie.update(
-        tache=clean_task(clean_task(list(dict.fromkeys(clean_task(sortie["tache"])))))
-    )
+    # sortie.update(
+    #     tache=clean_task(clean_task(list(dict.fromkeys(clean_task(sortie["tache"])))))
+    # )
+    sortie.update(tache=filtrer_et_dedoublonner(sortie["tache"]))
 
     sortie.update(
         diplome=filter_substring(
@@ -1812,6 +1683,29 @@ def transcript_point(CERCR: str) -> int:
         return 3
 
 
+def MEP_LANGUE(df_langues):
+
+    # Groupby langue et obtenir le niveau max de note pour chaque langue
+    df_max_notes = df_langues.groupby("langue").max().reset_index()
+
+    # Inverser l'échelle CERCR pour obtenir le niveau correspondant en termes descriptifs
+    echelle_CECR_inverse = {
+        6: "niveau C2",
+        5: "niveau C1",
+        4: "niveau B2",
+        3: "niveau B1",
+        2: "niveau A2",
+        1: "niveau A1",
+    }
+    # Appliquer l'échelle CECR inversée pour obtenir le niveau descriptif
+    df_max_notes["niveau_CECR"] = df_max_notes["note"].map(echelle_CECR_inverse)
+
+    return [
+        f"{row['langue'].capitalize()} {row['niveau_CECR']}"
+        for index, row in df_max_notes.iterrows()
+    ]
+
+
 def equivalent_CERCR(qualif: str) -> int:
     """cette fonction attribut une équivalence chiffré à la qualification des niveaux de langue"""
     qualif = unidecode.unidecode(qualif.lower())
@@ -1909,13 +1803,16 @@ def calcul_diplome(langue_job: pd.DataFrame, langue_prospect: pd.DataFrame) -> f
 
     if df_job.empty:
         return -1
+
+    elif df_job["note"].max() == 0:
+        return -1
     if df_prospect.empty:
         return 0
 
     if df_prospect["note"].max() >= df_job["note"].max():
         return 1
     else:
-        return df_prospect["note"].max() / df_job["note"].max()
+        return 0
 
 
 def mise_en_forme_diplome(liste_diplome: list) -> pd.DataFrame:
@@ -2178,6 +2075,47 @@ def ajuster_score_selon_correspondance_ajuste(
     return best.to_dict(orient="list"), score_final
 
 
+def encoder_et_obtenir_equivalences_dedupliquees(liste_textes):
+    """
+    Encode une liste de chaînes de caractères, retourne leurs équivalences,
+    et déduplique les résultats.
+
+    :param liste_textes: La liste des chaînes de caractères à encoder.
+    :param model_sim: Le modèle utilisé pour encoder les chaînes de caractères.
+    :param model_loaded: Le modèle utilisé pour prédire l'équivalence de l'encodage.
+    :param fonction_equivalence: La fonction d'équivalence pour obtenir l'équivalence de la prédiction.
+    :return: Liste dédupliquée des équivalences pour chaque chaîne de caractères encodée.
+    """
+    # Assurer que les textes sont en minuscules
+
+    liste_textes = [texte.lower() for texte in liste_textes]
+
+    # Encoder les chaînes de caractères
+    encodes = model_sim.encode(liste_textes)
+    encodes = [
+        encode.reshape(1, -1) for encode in encodes
+    ]  # Reshape pour correspondre à l'entrée attendue du modèle
+
+    # Utiliser un dictionnaire pour stocker les équivalences et éviter les doublons
+    equivalences = {}
+
+    # Itérer sur chaque élément encodé pour obtenir l'équivalence
+    for texte, encode in zip(liste_textes, encodes):
+        prediction = model_loaded.predict(encode)[
+            0
+        ]  # Obtenir la prédiction pour l'encodage
+        equivalence_ = equivalence(
+            str(prediction)
+        )  # Obtenir l'équivalence de la prédiction
+
+        # Ajouter l'équivalence à l'ensemble s'il n'est pas déjà présent
+        if equivalence_ not in equivalences:
+            equivalences[equivalence_] = texte
+
+    # Retourner la liste des clés du dictionnaire, qui sont les équivalences uniques
+    return list(equivalences.keys())
+
+
 def CR_SSKILL(result_job: dict, result_resume: dict) -> dict:
     """Fonction qui recoit les deux listes de compétences (rechercher par l'offre et celle du potentiel candidat )  et renvoie deux listes les meilleurs match et  les matchs globales"""
     out = []
@@ -2426,15 +2364,21 @@ def niveau_experience(nombre_annees):
 
 
 def comparer_niveau_experience(niveau1, niveau2):
-    # Comparaison insensible à la casse
-    if niveau1.lower() == niveau2.lower():
+    # Convertir les niveaux d'expérience en valeurs numériques pour faciliter la comparaison
+    niveau_numerique = {"junior": 1, "intermédiaire": 2, "senior": 3}
+
+    # Obtenir la valeur numérique pour chaque niveau
+    val_niveau1 = niveau_numerique.get(niveau1.lower(), 0)
+    val_niveau2 = niveau_numerique.get(niveau2.lower(), 0)
+
+    # Si le niveau1 est supérieur ou égal au niveau2, retourner 100, sinon 0
+    if val_niveau1 >= val_niveau2:
         return 100, (niveau1, niveau2)
     else:
         return 0, (niveau1, niveau2)
 
 
 def matching_offer_with_candidat(result_cv: dict, result_job_offer: dict):
-    note_diplome = calcul_diplome(result_job_offer["diplome"], result_cv["diplome"])
 
     tache, note_tache = correspondance_sskill(
         result_job_offer["tache"], result_cv["tache"]
@@ -2580,6 +2524,90 @@ def afficher_avis(score):
     """
 
     st.markdown(html_content, unsafe_allow_html=True)
+
+
+def afficher_avis_new(
+    score, score_task, score_langue, score_diplome, score_stack, score_exp, score_soft
+):
+
+    if score >= 90:
+        message = "Opportunitée adaptée."
+        couleur_degrade = "rgba(56,181,165,255)"
+    elif 70 <= score < 90:
+        message = "L'opportunitée semble etre à votre avantage."
+        couleur_degrade = "rgba(56,181,165,255)"
+    elif 65 <= score < 70:
+        message = "Opportunitée à envisager."
+        couleur_degrade = "#ff7f00"
+    elif 50 <= score < 65:
+        message = "Opportunitée à envisager avec des points qui peuvent etre bloquant"
+        couleur_degrade = "#ff7f00"
+    elif 40 <= score < 50:
+        message = "De gros écart avec l'attendue de l'opportunitée."
+        couleur_degrade = "#FA8072"
+    else:
+        message = "Opportunitée inadaptée."
+        couleur_degrade = "#FA8072"
+    # Définir les messages et les couleurs selon les scores
+    message_general = message
+
+    # Générer des listes de points forts et faibles
+    categories_scores = {
+        "Vos tâches réalisées": score_task,
+        "Votre niveau de langue": score_langue,
+        "Votre parcours scolaire": score_diplome,
+        "Vos outils utilisés": score_stack,
+        "Votre niveau d'éxperience": score_exp,
+        "Vos compétences humaines ": score_soft,
+    }
+    points_forts = [
+        cat for cat, score in categories_scores.items() if score >= 50 and score >= 0
+    ]
+    points_faibles = [
+        cat for cat, score in categories_scores.items() if score < 50 and score >= 0
+    ]
+
+    # Construire le HTML pour les points forts et faibles
+    points_forts_html = "".join(
+        [f"<li style='color:green;'>{point}</li>" for point in points_forts]
+    )
+    points_faibles_html = "".join(
+        [f"<li style='color:red;'>{point}</li>" for point in points_faibles]
+    )
+
+    # HTML Template
+    html_template = f"""
+    <style>
+        .info-box {{
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            text-align:center;
+            border: 3px solid {couleur_degrade};
+        }}
+        .points-forts {{
+            background-color: #ddffdd;
+        }}
+        .points-faibles {{
+            background-color: #ffdddd;
+        }}
+    </style>
+    <div class="info-box">
+        <p style='font-size: 0.9vw; text-align: center;font-weight: 600;color:{couleur_degrade};' >{message_general}</p>
+        <details class="points-forts">
+            <summary style='font-weight: 600;' >Vos atouts</summary>
+            <ul>{points_forts_html}</ul>
+        </details>
+        <details class="points-faibles">
+            <summary style='font-weight: 600;' >Vos points d'attentions</summary>
+            <ul>{points_faibles_html}</ul>
+        </details>
+    </div>
+    """
+
+    # Utiliser st.markdown pour afficher le contenu HTML/CSS
+    st.markdown(html_template, unsafe_allow_html=True)
 
 
 def parsing_joboffer_local(text_cv: str) -> dict:
@@ -3108,6 +3136,38 @@ def match_visualisation(sortie):
                 st.divider()
                 compt += 1
 
+    def taux_remplissage(
+        note_tache, note_langue, note_diplome, note_stack, note_exp, note_sskill
+    ):
+        scores = [
+            note_tache,
+            note_langue,
+            note_diplome,
+            note_stack,
+            note_exp,
+            note_sskill,
+        ]
+
+        # Compter le nombre de scores qui ne sont pas renseignés (note négative)
+        non_renseignes = sum(1 for score in scores if score < 0)
+
+        # Vérifier si 4 éléments ou moins ne sont pas renseignés
+        if (
+            non_renseignes >= 2
+        ):  # Si 4 ou moins sont renseignés, alors 2 ou plus ne le sont pas
+            message = "❌ Attention manque d'information sur l'offre."
+            couleur = "orange"
+        else:
+            message = "✅ Offre suffisamment renseignée."
+            couleur = "green"
+
+        # Afficher le message dans Streamlit
+        st.markdown(
+            f"<div style='color: {couleur};font-size:0.6vw;text-align:center;'>{message}</div>",
+            unsafe_allow_html=True,
+        )
+        st.markdown("#")
+
     def score_color(note):
         if note < 40:
             return "rgb(244,67,54)"
@@ -3130,12 +3190,12 @@ def match_visualisation(sortie):
         # option = st.selectbox("Liste de Talent", (range(0, len(sortie))))
 
         # candidat = sortie[option]
-        if st.button("retour"):
+        if st.button("Retour au choix des opportunitées"):
             st.session_state["matching_stage"] = 1
             st.session_state["indices_selectionnes"] = []
             st.session_state.result_matching = {}
             offres_emploi = st.session_state["offres_emploi"]
-            selected = "MUSALA"
+            selected = "NEST IA"
             del st.session_state.parsed_offres
             del st.session_state.region_selectionnee
 
@@ -3154,11 +3214,23 @@ def match_visualisation(sortie):
         # st.write(candidat)
         ####### RESULTAT #################
         st.markdown("#")
+
+        taux_remplissage(
+            candidat["NOTE_TACHE"],
+            candidat["NOTE LANGUE"],
+            candidat["NOTE_DIPLOME"],
+            candidat["NOTE_STACK"],
+            candidat["NOTE_EXP"],
+            candidat["NOTE_SSKILL"],
+        )
+
         html_diplome = f"""
-                                <h6 style='text-align: center; color:rgb(44,63,102);font-size: 1.8vw;'>NESTFIT® </h6> <br> 
-                            """
+            <h6 title='Score de compatibilité' 
+                style='text-align: center; color:rgb(44,63,102);font-size: 1.8vw;'>
+                NESTFIT
+            </h6> <br> 
+        """
         st.markdown(html_diplome, unsafe_allow_html=True)
-        import math
 
         def generate_gauge(note):
             if math.isnan(note):
@@ -3226,7 +3298,17 @@ def match_visualisation(sortie):
 
         score = candidat["MATCH_SCORE"]
 
-        afficher_avis(score)
+        # afficher_avis(score)
+
+        afficher_avis_new(
+            score,
+            candidat["NOTE_TACHE"],
+            candidat["NOTE LANGUE"],
+            candidat["NOTE_DIPLOME"],
+            candidat["NOTE_STACK"],
+            candidat["NOTE_EXP"],
+            candidat["NOTE_SSKILL"],
+        )
 
         st.markdown("#")
         if candidat["Talent_name"] is None:
@@ -3255,13 +3337,15 @@ def match_visualisation(sortie):
             else:
                 mail = candidat["TALENT_MAIL"]
             html_mail = f"""
-                        <h6 style='text-align: center; color:rgb(44,63,102);font-size: 1.1vw;'>Revenue</h6><b> <p  style='text-align: center;font-size: 0.7vw;'><strong>{mail}</strong></p></b>
+                        <h6 style='text-align: center; color:rgb(44,63,102);font-size: 1.1vw;'>Revenue</h6><b> <p  style='text-align: center;font-size: 0.9vw;'><strong>{mail}</strong></p></b>
                                 """
             st.markdown(html_mail, unsafe_allow_html=True)
 
             #################  SOFT SKILLS
 
-            base_SKILLS = candidat["TALENT_SOFT"]
+            base_SKILLS = encoder_et_obtenir_equivalences_dedupliquees(
+                candidat["TALENT_SOFT"]
+            )
             hard_skills_list_display = []
 
             if base_SKILLS is None:
@@ -3306,7 +3390,7 @@ def match_visualisation(sortie):
                 annotated_text(hard_skills_list_display)
 
             else:
-                hard_skills_display = "Pas de diplome reconnu "
+                hard_skills_display = "Non spécifiée dans le descriptif"
                 html_diplome = f"""
                        <h5 style='text-align: center; color:rgb(44,63,102);font-size: 1.1vw;'> FORMATIONS</h5> <b> <p style='text-align: center;'>{hard_skills_display} </p></b>
                             """
@@ -3322,6 +3406,7 @@ def match_visualisation(sortie):
                 base_langue = []
 
             if len(base_langue) > 0:
+                base_langue = MEP_LANGUE(traitement_langue(base_langue))
                 for langue in base_langue:
                     langue_list_display.append((langue.capitalize(), "", "#fea"))
                 html_diplome = f"""
@@ -3331,7 +3416,7 @@ def match_visualisation(sortie):
                 annotated_text(langue_list_display)
 
             else:
-                langue_display = "Aucun niveau de langue signifié"
+                langue_display = "Non spécifiée dans le descriptif"
                 html_diplome = f"""
                         <h5 style='text-align: center; color:rgb(44,63,102);font-size: 1.1vw;'>LANGUE</h5> <b> <p style='text-align: center;'>{langue_display} </p></b>
                             """
@@ -3373,7 +3458,7 @@ def match_visualisation(sortie):
 
             if len(base_SKILLS) > 0:
                 for hard_skill in base_SKILLS:
-                    hard_skills_list_display.append((hard_skill.upper(), ""))
+                    hard_skills_list_display.append((hard_skill.capitalize(), ""))
                 html_diplome = f"""
                                 <h5 style='text-align: center; color:rgb(44,63,102);font-size: 1.1vw;'> COMPETENCES </h5> <b> <p style='text-align: center;'></p></b>
                             """
@@ -3435,7 +3520,7 @@ def match_visualisation(sortie):
         )
         c1, c2, c3 = st.columns([0.1, 0.8, 0.1], gap="large")
         with c2:
-            afficher_conseil(candidat["NOTE_DIPLOME"])
+            afficher_conseil_diplome(candidat["NOTE_DIPLOME"])
             st.markdown("#")
 
         prospect_dipl = [
@@ -3469,7 +3554,7 @@ def match_visualisation(sortie):
         )
         c1, c2, c3 = st.columns([0.1, 0.8, 0.1], gap="large")
         with c2:
-            afficher_conseil(candidat["NOTE LANGUE"])
+            afficher_conseil_langue(candidat["NOTE LANGUE"])
 
         st.plotly_chart(
             Graph_Langue(candidat["DETAIL_LANGUE"]),
@@ -3483,8 +3568,7 @@ def match_visualisation(sortie):
         )
         c1, c2, c3 = st.columns([0.1, 0.8, 0.1], gap="large")
         with c2:
-            afficher_conseil(candidat["NOTE_EXP"])
-
+            afficher_conseil_experience(candidat["NOTE_EXP"])
         st.plotly_chart(
             Graph_Comparaison_Niveau_avec_Liste(candidat["DETAIL_EXP"]),
             use_container_width=True,
