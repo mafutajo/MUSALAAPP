@@ -224,9 +224,14 @@ def accueil():
                         border-radius: 10px;
                         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Ombre douce */
                     }
-                    .header, .explication, h1, h2, summary {
+
+                    .header{
+                        color: rgb(113,224,203); /* Gris Anthracite pour les textes */
+                    }
+                    .explication, h1, h2, summary {
                         color: #34495E; /* Gris Anthracite pour les textes */
                     }
+                   
                     .explication {
                         background-color: #DAE8FC; /* Couleur subtile pour les sections d'explication */
                         padding: 20px;
@@ -249,28 +254,39 @@ def accueil():
                         padding: 20px;
                         border-radius: 10px;
                     }
+
+                    .axe-analyse2 {
+                        flex: 1;
+                        background-color: rgb(113,224,203);
+                        margin: 10px;
+                        font-size: 0.9em;
+                        text-align: center;
+                        /* Vert clair pour les axes d'analyse */
+                        padding: 20px;
+                        border-radius: 10px;
+                    }
                     p {
                         color: #000000; /* Texte noir pour une meilleure lisibilité */
                     }
                 </style>
                 <div class="container">
                     <div class="header">
-                        <h1>Optimisez votre parcours professionnel avec NEST</h1>
-                        <p>Découvrez comment NEST valorise chaque aspect de votre profil pour une opportunité sur mesure.</p>
+                        <h1 ><span style="color: rgb(113,224,203);"> NEST :</span> un outil stratégique et un allié du succès professionnel.</h1>
+                        <p>Découvrez comment nous valorisons chaque aspect de votre profil pour une opportunité sur mesure.</p>
                     </div>
                     <div class="explication">
                         <h2>Les axes d'analyse NEST</h2>
-                        <p>Chez NEST, nous utilisons des axes d'analyse spécifiques pour aligner vos compétences et aspirations avec les opportunités de carrière idéales.</p>
+                        <p> NEST utilise des axes d'analyse spécifiques pour aligner vos compétences et aspirations avec les opportunités de carrière idéales.</p>
                     </div>
                     <div class="expander">
                         <details>
-                            <summary>Explorez les axes d'analyse clés selon NEST</summary>
+                            <summary>Decouvrez en detail les axes d'analyses clés primordiales pour NEST</summary>
                             <div class="axe-analyse-explication">
                                 <div class="axe-analyse">
                                     <h3>Formation Académique</h3>
                                     <p>Une mise en valeur de votre parcours éducatif souligne la base de vos connaissances et compétences.</p>
                                 </div>
-                                <div class="axe-analyse">
+                                <div class="axe-analyse2">
                                     <h3>Compétences Comportementales</h3>
                                     <p>Les soft skills sont cruciales pour démontrer votre capacité à évoluer dans divers environnements de travail.</p>
                                 </div>
@@ -278,7 +294,7 @@ def accueil():
                                     <h3>Compétences Techniques</h3>
                                     <p>Vos hard skills et outils technologiques maîtrisés reflètent votre aptitude à répondre aux exigences spécifiques du poste.</p>
                                 </div>
-                                  <div class="axe-analyse">
+                                  <div class="axe-analyse2">
                             <h3>Langues Parlées</h3>
                             <p>L'aptitude à communiquer dans plusieurs langues est un atout précieux dans un contexte professionnel globalisé.</p>
                         </div>
@@ -286,7 +302,7 @@ def accueil():
                             <h3>Localisation & Mobilité</h3>
                             <p>La flexibilité géographique et la disposition à la mobilité peuvent ouvrir des portes à des opportunités uniques.</p>
                         </div>
-                        <div class="axe-analyse">
+                        <div class="axe-analyse2">
                                     <h3>Expérience Professionnelle</h3>
                                     <p>Votre historique de travail et les réussites professionnelles montrent votre évolution et l'impact dans vos rôles précédents.</p>
                                 </div>

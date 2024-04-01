@@ -74,6 +74,7 @@ from lst_fction import (
     diploma,
     mise_en_forme_diplome,
     match_visualisation,
+    encoder_et_obtenir_equivalences_dedupliquees,
 )
 
 
@@ -976,7 +977,7 @@ def afficher_infos_candidat(data):
         </div>
         <div class="candidat-section">
             <div class="candidat-section-title">Aptitudes Comportementales</div>
-            <div class="candidat-info">{' - '.join([x.capitalize() for x in data['soft_skills']])}</div>
+            <div class="candidat-info">{' - '.join([x.capitalize() for x in  encoder_et_obtenir_equivalences_dedupliquees(data['soft_skills'])])}</div>
         </div>
         <div class="candidat-section">
             <div class="candidat-section-title">Expertise Technique</div>
