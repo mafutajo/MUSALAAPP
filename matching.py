@@ -1096,7 +1096,7 @@ def display_parsed_cv():
                     )
                     offres_emploi = ajouter_region_a_offres_depuis_fichier(
                         offres_emploi,
-                        "/Users/tuyindig/Documents/Nest_app/nest-app/cities.json",
+                        "cities.json",
                     )
 
                     offres_emploi = ajouter_type_contrat(offres_emploi)
@@ -1107,7 +1107,7 @@ def display_parsed_cv():
                     offres_emploi = st.session_state["offres_emploi"]
                     offres_emploi = ajouter_region_a_offres_depuis_fichier(
                         offres_emploi,
-                        "/Users/tuyindig/Documents/Nest_app/nest-app/cities.json",
+                        "cities.json",
                     )
 
                     offres_emploi = ajouter_type_contrat(offres_emploi)
