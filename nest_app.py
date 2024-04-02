@@ -94,6 +94,47 @@ def page_presentation():
         st.markdown("#")
         st.markdown("#")
         st.markdown("#")
+
+        st.markdown(
+            """
+        <style>
+            .img-descriptif p {
+                font-size: 18px;
+            }
+            .img-descriptif b {
+                font-weight: bold;
+            }
+        </style>
+        <div class="img-descriptif">
+            <p> <b>Data Leader</b> dans la création de  <b>NEST</b><br>
+            Le recrutement est un enjeu crucial dans un univers de travail en constante évolution.</p>
+            <p><b>Expertise :</b> Ma spécialisation en <b>science des données</b> et <b>intelligence artificielle</b> me permet d'apporter une valeur ajoutée significative à travers des solutions innovantes pour optimiser les processus de recrutement.</p>
+            <p><b>Prochaines étapes :</b> Je travaille sur l'intégration de l'intelligence artificielle avancée pour personnaliser encore plus l'expérience de nos clients et fournir des recommandations sur mesure basées sur l'analyse prédictive et le traitement du langage naturel.</p>
+            <p>Pour plus d'informations ou pour discuter d'opportunités, n'hésitez pas à me contacter :</p>
+            <ul>
+                <li>Email : <a href="mailto:lemniscatedata@gmail.com">lemniscatedata@gmail.com</a></li>
+                <li>LinkedIn : <a href="https://www.linkedin.com/in/geoffret-tuyindi-mafuta-40801a150/" target="_blank">Contact LinkedIn</a></li>
+            </ul>
+        </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    col1, col2 = st.columns([2, 3])
+    with col1:
+        st.markdown(
+            """
+            <h1 style="text-align:center;font-size: 2.4vw;color: #34495E;">
+            <em>PHRASE/em>
+            </h1>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.image("aravinth.jpeg", use_column_width=True)
+    with col2:
+        st.markdown("#")
+        st.markdown("#")
         st.markdown("#")
         st.markdown("#")
 

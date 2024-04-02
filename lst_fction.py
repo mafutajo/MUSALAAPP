@@ -1263,11 +1263,6 @@ def parsing_joboffer(
 
     sortie.update(id_pdf_hashed=hashlib.md5(text_cv.encode("utf-8")).hexdigest())
 
-    sortie.update(
-        road_to_image="/Users/tuyindig/Documents/Nest_app/nest-app/"
-        + sortie["id_pdf_hashed"]
-    )
-
     # sortie.update(
     #     tache=clean_task(clean_task(list(dict.fromkeys(clean_task(sortie["tache"])))))
     # )
@@ -3121,7 +3116,7 @@ def match_visualisation(sortie):
                 match_color = "#afa" if c > 0.5 else "#faa"
 
                 annotated_text(
-                    (a, "Rechercher", "#aaa"),  # Gris pour "Rechercher"
+                    (a.capitalize(), "Rechercher", "#aaa"),  # Gris pour "Rechercher"
                     (
                         b.capitalize(),
                         "Disponible",
