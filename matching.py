@@ -1193,7 +1193,8 @@ def display_parsed_cv():
 
 
 def display_matching_results():
-    st.write(st.session_state["result_matching"])
+    # st.write(st.session_state["result_matching"])
+    pass
 
 
 def job_offer_parser(selected):
@@ -2357,7 +2358,7 @@ def test_affichage():
     st.markdown("#")
     st.markdown("#")
     evaluate_taches(match_result["TACHE"], match_result["NOTE_TACHE"])
-    st.write(st.session_state)
+    # st.write(st.session_state)
 
 
 def visionnage_test():
