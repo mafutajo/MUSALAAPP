@@ -1433,6 +1433,8 @@ def parsing_joboffer(
         "analyses",
         "dotee d'une",
         "dote d'un",
+        "decison",
+        "d'exploitation",
     ]
     sortie.update(
         soft_skills=[x for x in sortie["soft_skills"] if x.lower() not in common_eror]

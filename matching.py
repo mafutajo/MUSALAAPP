@@ -2007,7 +2007,9 @@ def evaluate_job_fit(talent_type, job_type):
     with col2:
         if talent_type == job_type:
             # The talent type matches the job type
-            st.success(f"Votre profil correspond à celui recherché **{job_type}**.")
+            st.success(
+                f"Votre profil correspond à celui recherché à savoir **{clarifier_nom(job_type)}**."
+            )
         else:
             # The talent type does not match the job type
             st.error(
