@@ -1,4 +1,5 @@
-__pycache/*
-__MACROFIT/*
-__venv/*
-__MACROFIT/*
+__pycache__/*
+MACROFIT/*
+venv/*
+LOSS_NEW2/*
+zsh:1: command not found: q
