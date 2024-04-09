@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="NEST", layout="wide", page_icon="nest_logo-transformed.png"
 )
 from header import header, accueil
-from matching import job_offer_parser
+from matching import job_offer_parser, test_cv_page
 
 from PIL import Image
 
@@ -169,9 +169,11 @@ def page_presentation():
 if selected == "Accueil":
     accueil()
 
-if selected == "NEST IA":
+if selected == "Recherche guidée":
     job_offer_parser(selected)
 
+if selected == "Test des filtres emploi":
+    test_cv_page()
 if selected == "Qui sommes nous?":
 
     page_presentation()

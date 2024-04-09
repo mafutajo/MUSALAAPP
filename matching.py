@@ -3,6 +3,7 @@ import pandas as pd
 from PIL import Image
 import hashlib
 import io
+import plotly.graph_objects as go
 from annotated_text import annotated_text
 import streamlit as st
 import pandas as pd
@@ -68,6 +69,31 @@ def ajouter_region_a_offres_depuis_fichier(offres, chemin_cities_json):
     return offres
 
 
+def affichage_scatter(candidate_skill: dict):
+    fig = go.Figure(
+        data=go.Scatterpolar(
+            r=candidate_skill["RGmatch"],
+            theta=candidate_skill["skillrecherche"],
+            text=candidate_skill["skilldispo"],
+            fill="toself",
+            fillcolor="rgb(138,164,197)",
+            texttemplate="plotly_dark",
+        )
+    )
+
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+            ),
+        ),
+        showlegend=False,
+    )
+    fig.update_polars(radialaxis=dict(range=[0, 1]))
+
+    return fig
+
+
 from lst_fction import (
     parsing_joboffer,
     matching_offer_with_candidat,
@@ -75,6 +101,9 @@ from lst_fction import (
     mise_en_forme_diplome,
     match_visualisation,
     encoder_et_obtenir_equivalences_dedupliquees,
+    MEP_LANGUE,
+    traitement_langue,
+    afficher_conseil,
 )
 
 
@@ -332,6 +361,24 @@ def on_match_button_click(offres):
                     "libelle", "Salaire non spécifié"
                 )
 
+                # Préparation de l'objet parsed_offre pour stocker l'URL prioritaire
+                # Tentative d'extraire 'urlPostulation' depuis 'contact'
+                contact = offre.get(
+                    "contact", {}
+                )  # Retourne un dictionnaire vide si 'contact' n'existe pas
+                url_postulation = contact.get(
+                    "urlPostulation", ""
+                )  # Retourne une chaîne vide si 'urlPostulation' n'existe pas
+
+                # Utiliser 'urlOrigine' si 'urlPostulation' est vide
+                url_finale = (
+                    url_postulation
+                    if url_postulation
+                    else offre["origineOffre"].get("urlOrigine", "")
+                )
+
+                parsed_offre["id_pdf_hashed"] = url_finale
+
                 # Ajout des compétences à la liste 'tache'
                 competences_libelles = [
                     comp["libelle"] for comp in offre.get("competences", [])
@@ -387,7 +434,7 @@ def on_match_button_click(offres):
             cache_matching(parsed_text, parsed_offre) for parsed_offre in parsed_offres
         ]
 
-        st.write(result_matching)
+        # st.write(result_matching)
         # Tri de result_matching par "MATCH_SCORE" en ordre décroissant
 
         result_matching = sorted(
@@ -433,6 +480,8 @@ def display_initial_message():
         with col2:
             st.markdown("#")
             st.markdown("#")
+            st.markdown("#")
+            st.markdown("#")
             matching_process_html_with_intro = """
             <style>
                 .matching-container {
@@ -469,10 +518,12 @@ def display_initial_message():
             </style>
 
             <div class="intro-text">
-                <p style="font-size: 1.3vw; color: #34495E;">
-                    Dans un monde où 80% des processus de recrutement sont désormais assistés par l'intelligence artificielle et des outils numériques de filtrage, comprendre et maîtriser ces technologies devient essentiel.<br>
-                    Découvrez comment maximiser vos chances dans ce nouvel écosystème de recrutement :
-                </p>
+               <h1 style="color: #34495E; text-align: center;">
+                    Bienvenue sur la page d'accompagnement de votre recherche d'emploi par <span style="color: rgb(113,224,203);">  <strong>NEST</strong></span></h1><h2>Notre IA de recrutement optimise votre parcours de candidat avec des conseils personnalisés.
+                </h2>
+                <P style="color: #34495E; text-align: center;">
+                    Comment Nest va vous aider ?
+                </P>
             </div>
 
             <div class="matching-container">
@@ -512,12 +563,11 @@ def display_initial_message():
         """,
             unsafe_allow_html=True,
         )
-        col1, col2, col3 = st.columns([0.2, 0.6, 0.2])
+        col1, col2, col3 = st.columns([0.3, 0.3, 0.4])
         with col2:
             uploaded_file = st.file_uploader(" ", type="pdf")
-        col1, col2, col3 = st.columns([0.35, 0.3, 0.35], gap="large")
-        with col2:
-            st.markdown("#")
+
+        with col3:
             st.markdown("#")
 
             bouton_validation = st.button("Lancez la recherche")
@@ -840,7 +890,7 @@ def afficher_offres_emploi(
                 key=f"select_{id_unique_offre}",  # Clé unique basée sur l'ID de l'offre
                 disabled=est_desactive,
             )
-
+        # st.write(st.session_state)
         with col1:
             job_name = (
                 offre["intitule"]
@@ -920,7 +970,7 @@ def afficher_infos_candidat(data):
     <style>
         .candidat-container {{
             font-family: Arial, sans-serif;
-            background-color: #E0E0E0; /* Fond gris clair */
+            background-color: #E8F0FE; /* Fond gris clair */
             border-radius: 20px;
             box-shadow: 0px 8px 8px rgba(0,0,0,0.1); /* Ombre plus douce */
             padding: 20px;
@@ -973,7 +1023,7 @@ def afficher_infos_candidat(data):
         </div>
         <div class="candidat-section">
             <div class="candidat-section-title">Compétences Linguistiques</div>
-            <div class="candidat-info">{' - '.join([x.capitalize() for x in data['langue']])}</div>
+            <div class="candidat-info">{' - '.join([x for x in MEP_LANGUE(traitement_langue(data['langue']))])}</div>
         </div>
         <div class="candidat-section">
             <div class="candidat-section-title">Aptitudes Comportementales</div>
@@ -1181,3 +1231,1139 @@ def job_offer_parser(selected):
         # st.write(st.session_state["indices_selectionnes"])
 
         match_visualisation(st.session_state["result_matching"])
+
+
+def initial_test():
+    st.markdown("#")
+    st.markdown("#")
+    voxlone, colonne1, colonne2 = st.columns([0.2, 0.8, 0.2], gap="small")
+    with colonne1:
+        st.markdown(
+            """
+    <style>
+        .container {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1,h2,h3,h4 {
+            color: #1B4F72;
+            text-align: center;
+        }
+        p {
+            color: #34495E;
+        }
+        .button {
+            background-color: rgb(113, 224, 203);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .button:hover {
+            background-color: rgb(90, 200, 180);
+        }
+    </style>
+    <div class="container" style="text-align: center;">
+        <h1 style="color: #34495E; margin-bottom: 20px;">
+            <strong>8 fois sur 10, votre CV est rejeté sans même avoir été vu par un humain.</strong>
+        </h1>
+        <h2 style="color: rgb(113, 224, 203); margin-bottom: 15px;">
+            Avec <strong>NEST</strong>, évaluez vos chances,
+        </h2>
+        <h3 style="color: #34495E; margin-bottom: 10px;">
+            et obtenez les éléments nécessaires pour passer le premier filtre.
+        </h3>
+        <h4 style="margin-top: 25px;">
+            <span style='background-color: rgb(113, 224, 203); color: white; padding: 5px 10px; border-radius: 5px;'>Evaluez vos chances maintenant !</span>
+        </h4>
+    </div>
+""",
+            unsafe_allow_html=True,
+        )
+    st.markdown("#")
+    st.markdown("#")
+
+    # Utilisation de colonnes pour une meilleure organisation visuelle
+    col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
+    st.markdown("#")
+    st.markdown("#")
+
+    with col2:
+        job_offer_text = None
+        job_offer_pdf = None
+        with st.expander("", expanded=True):
+            st.markdown(
+                "<div class='uploader'>Chargez votre CV au format PDF :</div>",
+                unsafe_allow_html=True,
+            )
+            resume_upload = st.file_uploader("", type=["pdf"], key="resume_upload")
+
+    with col3:
+        mode_entree = st.selectbox(
+            "Comment souhaitez-vous fournir l'offre d'emploi ?",
+            ["Sélectionner", "Entrer le texte", "Charger une offre en PDF"],
+        )
+        if mode_entree == "Entrer le texte":
+            st.markdown(
+                "<div class='textarea'>Copiez l'offre d'emploi ici :</div>",
+                unsafe_allow_html=True,
+            )
+            job_offer_text = st.text_area("", height=300, key="job_offer_text")
+        elif mode_entree == "Charger une offre en PDF":
+            job_offer_pdf = st.file_uploader("", type=["pdf"], key="job_offer_pdf")
+
+    # Activation du bouton de soumission selon les conditions spécifiées
+    condition_soumission = resume_upload and (
+        job_offer_text and len(job_offer_text) >= 100 or job_offer_pdf is not None
+    )
+
+    if condition_soumission:
+        A, B, C, D, E, AA, BB, CC, DD = st.columns(9)
+        with E:
+            if st.button("Lancer le test"):
+                st.session_state["testing_stage"] = 1
+                st.session_state["cv_holder"] = resume_upload
+                # Stocker le texte de l'offre d'emploi ou le chemin du fichier PDF selon le cas
+                if job_offer_text:
+                    st.session_state["job_holder"] = job_offer_text
+                else:
+                    st.session_state["job_holder"] = job_offer_pdf
+                st.rerun()
+    else:
+        st.markdown(
+            "<h3 >Veuillez charger un CV et entrer une opportunité qui vous interesse d'au moins 100 mots pour activer l'evaluation.</h3>",
+            unsafe_allow_html=True,
+        )
+
+
+def test_cv_page():
+    if "resume_data" not in st.session_state:
+        st.session_state["resume_data"] = None
+    if "job_offer_data" not in st.session_state:
+        st.session_state["job_offer_data"] = None
+
+    if "loading" not in st.session_state:
+        st.session_state["loading"] = False
+
+    if "testing_stage" not in st.session_state:
+        st.session_state["testing_stage"] = 0
+
+    if "cv_holder" not in st.session_state:
+        st.session_state["cv_holder"] = None
+    if "job_holder" not in st.session_state:
+        st.session_state["job_holder"] = None
+
+    if "matching_stat" not in st.session_state:
+        st.session_state["matching_stat"] = None
+
+    if st.session_state["testing_stage"] == 0:
+        initial_test()
+    if st.session_state["testing_stage"] == 1:
+        if st.session_state["matching_stat"] == None:
+
+            with st.spinner("**Analyse de votre profil**"):
+                parsed_resume = parsing_joboffer(st.session_state["cv_holder"])
+            with st.spinner("**Analyse de l'offre**"):
+                parsed_job_offer = parsing_joboffer(st.session_state["job_holder"])
+            col1, col2, COL = st.columns(3)
+            with col2:
+                with st.spinner("**Simulation d'entretien**"):
+                    matched_stuff = matching_offer_with_candidat(
+                        parsed_resume, parsed_job_offer
+                    )
+
+                # Stocker les résultats dans st.session_state
+                st.session_state["resume_data"] = parsed_resume
+                st.session_state["job_offer_data"] = parsed_job_offer
+                st.session_state["matching_stat"] = matched_stuff
+                st.session_state["testing_stage"] = 2
+                st.rerun()
+
+    if st.session_state["testing_stage"] == 2:
+        visionnage_test()
+
+        # Exemple d'utilisation de match_visualisation si applicable
+        # match_visualisation(...)
+
+
+def calculer_note_globale():
+    parsed_data = st.session_state["resume_data"]
+    elements_presents = sum(
+        [
+            bool(", ".join(parsed_data.get("numero", []))),
+            bool(", ".join(parsed_data.get("mail", []))),
+            bool(", ".join(parsed_data.get("nom_prenom", []))),
+            bool(", ".join(parsed_data.get("location", []))),
+        ]
+    )
+    pourcentage_identification = int((elements_presents / 4) * 100)
+
+    nombre_soft_skills = len(parsed_data.get("soft_skills", []))
+    note_soft_skills = min(nombre_soft_skills / 4, 1) * 100
+
+    diplomes = parsed_data.get("diplome", [])
+    langues = parsed_data.get("langue", [])
+    score_diplome = (50 if diplomes else 0) + (50 if langues else 0)  # Ajustement ici
+
+    nombre_taches = len(parsed_data.get("tache", []))
+    score_taches = min(nombre_taches / 8, 1) * 6
+
+    nombre_hard_skills = len(parsed_data.get("hard_skills", []))
+    score_hard_skills = min(nombre_hard_skills / 4, 1) * 6
+    score_total_taches_et_skills = (score_taches + score_hard_skills) / 12 * 100
+
+    # Poids attribués à chaque score pour le calcul de la note globale
+    poids = [0.3, 0.1, 0.3, 0.3]
+
+    # Calcul de la note globale en utilisant les poids définis
+    note_globale = (
+        pourcentage_identification * poids[0]
+        + note_soft_skills * poids[1]
+        + score_total_taches_et_skills * poids[2]
+        + score_diplome * poids[3]
+    )
+
+    return note_globale
+
+
+def calculer_note_globale_job():
+    parsed_data = st.session_state["job_offer_data"]
+    elements_presents = sum([bool(", ".join(parsed_data.get("location", [])))])
+    pourcentage_identification = int((elements_presents / 1) * 100)
+
+    nombre_soft_skills = len(parsed_data.get("soft_skills", []))
+    note_soft_skills = min(nombre_soft_skills / 4, 1) * 100
+
+    diplomes = parsed_data.get("diplome", [])
+    langues = parsed_data.get("langue", [])
+    score_diplome = (50 if diplomes else 0) + (50 if langues else 0)  # Ajustement ici
+
+    nombre_taches = len(parsed_data.get("tache", []))
+    score_taches = min(nombre_taches / 8, 1) * 6
+
+    nombre_hard_skills = len(parsed_data.get("hard_skills", []))
+    score_hard_skills = min(nombre_hard_skills / 4, 1) * 6
+    score_total_taches_et_skills = (score_taches + score_hard_skills) / 12 * 100
+
+    # Poids attribués à chaque score pour le calcul de la note globale
+    poids = [0.1, 0.3, 0.3, 0.3]
+
+    # Calcul de la note globale en utilisant les poids définis
+    note_globale = (
+        pourcentage_identification * poids[0]
+        + note_soft_skills * poids[1]
+        + score_total_taches_et_skills * poids[2]
+        + score_diplome * poids[3]
+    )
+
+    return note_globale
+
+
+def afficher_qualites_cv():
+    st.markdown("#")
+    if st.button("Retour à la sélection"):
+        # Mettre à jour "testing_stage" dans st.session_state
+        st.session_state["testing_stage"] = 0
+        st.session_state["matching_stat"] = None
+        st.rerun()
+    st.markdown("#")
+    st.markdown("#")
+    st.markdown("#")
+    parsed_data = st.session_state["resume_data"]
+    # Extraction des informations pertinentes
+    numero = ", ".join(parsed_data.get("numero", []))
+    mail = ", ".join(parsed_data.get("mail", []))
+    nom_prenom = ", ".join(parsed_data.get("nom_prenom", []))
+    adresse = ", ".join(parsed_data.get("location", []))
+    title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h3 style="color:  #34495E; text-align: center; font-weight: bold;">Votre profil</h3>
+            </div>
+            """
+
+    st.markdown(title_html, unsafe_allow_html=True)
+    afficher_grade_cv(calculer_note_globale(), 0)
+    with st.expander("**Décrouvez en detail l'evaluation de votre CV**"):
+        # Calculer le pourcentage d'identification
+        elements_presents = sum(
+            [bool(numero), bool(mail), bool(nom_prenom), bool(adresse)]
+        )
+        pourcentage_identification = int((elements_presents / 4) * 100)
+
+        # Définition des couleurs
+        couleur_identifiable = "#006400"  # Vert foncé
+        couleur_non_identifiable = "#8B0000"  # Rouge foncé
+
+        html_content = f"""
+        <div style="text-align: center;color:#1B4F72;">
+            <h2 style="color: rgb(113, 224, 203);">IDENTITÉ</h2>
+            <div style="background-color: #eee; border-radius: 10px; width: 80%; height: 24px; margin: 10px auto; position: relative;">
+                <div style="background-color: rgb(113, 224, 203); width: {pourcentage_identification}%; height: 100%; border-radius: 10px; position: absolute;">
+                    <span style="color: #fff; font-weight: bold; position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{pourcentage_identification}%</span>
+                </div>
+            </div> 
+            <p><strong>Votre nom </strong> <span style="font-weight:bold; color: {couleur_identifiable if nom_prenom else couleur_non_identifiable};">{'IDENTIFIABLE ' if nom_prenom else 'NON IDENTIFIABLE ❌'}</span></p>
+            <p><strong>Votre region </strong> <span style="font-weight:bold; color: {couleur_identifiable if adresse else couleur_non_identifiable};">{'IDENTIFIABLE ' if adresse else 'NON IDENTIFIABLE ❌'}</span></p>
+            <p><strong>Contact par téléphone </strong> <span style="font-weight:bold; color: {couleur_identifiable if numero else couleur_non_identifiable};">{'IDENTIFIABLE ' if numero else 'NON IDENTIFIABLE ❌'}</span></p>
+            <p><strong>Contact par mail </strong> <span style="font-weight:bold; color: {couleur_identifiable if mail else couleur_non_identifiable};">{'IDENTIFIABLE ' if mail else 'NON IDENTIFIABLE ❌'}</span></p>
+        
+        </div>
+        """
+        st.markdown("#")
+
+        st.markdown(html_content, unsafe_allow_html=True)
+        ##### SOFT SKILLS
+        soft_skills = parsed_data.get("soft_skills", [])
+
+        # Calcul de la note basée sur le nombre de soft skills
+        nombre_soft_skills = len(soft_skills)
+        note_soft_skills = min(nombre_soft_skills / 4, 1) * 100
+        couleur_score = (
+            "#ff0000" if note_soft_skills < 50 else "#fff"
+        )  # Rouge pour les scores < 50%, blanc sinon
+        commentaire = (
+            "<p style='color: #006400; font-size: 14px;font-weight:bolder;'>Vous donnez suffisaments d'élements au recruteur pour vous identifié </p>"
+            if nombre_soft_skills >= 4
+            else "<p style='color: red; font-size: 14px;font-weight:bolder;'>Décrivez au moins 4 aspects de votre personnalité.</p>"
+        )
+
+        # Construction du contenu HTML pour la section Qui vous êtes
+        html_content = f"""
+        <div style="text-align: center; margin-top: 20px;color:#1B4F72;">
+            <h2 style="color: rgb(113, 224, 203);">SOFT SKILLS</h2>
+            <div style="background-color: #eee; border-radius: 10px; width: 80%; height: 24px; margin: 10px auto; position: relative;">
+                <div style="background-color: rgb(113, 224, 203); width: {note_soft_skills}%; height: 100%; border-radius: 10px; position: absolute;">
+                    <span style="color: {couleur_score}; font-weight: bold; position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{int(note_soft_skills)}%</span>
+                </div>
+            </div>
+            {commentaire}
+        </div>
+        """
+
+        # Affichage du contenu HTML dans Streamlit
+        st.markdown(html_content, unsafe_allow_html=True)
+        ######## ACADEMIQUES
+        diplomes = parsed_data.get("diplome", [])
+        langues = parsed_data.get("langue", [])
+
+        # Calculer le score d'identifiabilité (50% pour chaque section présente)
+        score_diplome = (50 if diplomes else 0) + (50 if langues else 0)
+        couleur_barre = (
+            "#006400" if score_diplome > 50 else "#8B0000"
+        )  # Vert foncé si score > 50, rouge foncé sinon
+
+        langue_message = (
+            "IDENTIFIABLE"
+            if langues
+            else "Aucune langue indiquée. Mentionnez au moins votre niveau d'anglais."
+        )
+        couleur_langue = (
+            "#006400" if langues else "#8B0000"
+        )  # Vert foncé si présente, rouge foncé sinon
+
+        # Construction du contenu HTML pour la section Académique et Langues avec barre de progression
+        html_content = f"""
+        <div style="text-align: center; margin-top: 20px;color:#1B4F72;">
+            <h2 style="color: rgb(113, 224, 203);">ACADEMIE</h2>
+            <div style="background-color: #eee; border-radius: 10px; width: 80%; height: 24px; margin: 10px auto; position: relative;">
+                <div style="background-color: rgb(113, 224, 203); width: {score_diplome}%; height: 100%; border-radius: 10px; position: absolute;">
+                    <span style="color: #fff; font-weight: bold; position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{score_diplome}%</span>
+                </div>
+            </div>
+            <p><strong>Niveau académique </strong> <span style="font-weight:bold; color: {couleur_barre};">{'IDENTIFIABLE' if diplomes else 'NON IDENTIFIABLE ❌'}</span></p>
+            <p><strong>Niveau de Langue</strong> <span style="font-weight:bold; color: {couleur_langue};">{langue_message}</span></p>
+        </div>
+        """
+
+        # Affichage du contenu HTML dans Streamlit
+        st.markdown(html_content, unsafe_allow_html=True)
+        ####### stack
+
+        taches = parsed_data.get("tache", [])
+        hard_skills = parsed_data.get("hard_skills", [])
+        job_type = parsed_data.get("job_type", "votre secteur")
+
+        # Calcul du score d'identifiabilité
+        score_taches = (
+            min(len(taches) / 8, 1) * 6
+        )  # 6 points possibles, besoin de 8 tâches pour le max
+        score_hard_skills = (
+            min(len(hard_skills) / 4, 1) * 6
+        )  # 6 points possibles, besoin de 4 compétences pour le max
+        score_total = score_taches + score_hard_skills
+        score_totale = score_total / 12 * 100
+        # Détermination des couleurs et des messages basés sur l'identifiabilité
+        couleur_taches = (
+            "#006400" if len(taches) >= 8 else "#8B0000"
+        )  # Vert foncé si >= 8 tâches, rouge foncé sinon
+        couleur_hard_skills = (
+            "#006400" if len(hard_skills) >= 4 else "#8B0000"
+        )  # Vert foncé si >= 4 compétences, rouge foncé sinon
+
+        commentaire_hard_skills = (
+            ""
+            if len(hard_skills) >= 4
+            else "<p style='color: red; font-size: 14px;text-align: center;'>Spécifiez au moins 4 outil techniques.</p>"
+        )
+        commentaire_taches = (
+            ""
+            if len(taches) >= 8
+            else f"<p style='color: red; font-size: 14px;font-weight:bold;text-align: center;'>Notez le maximum de taches réalisées lors de vos experiences en relation avec le secteur: {job_type}.</p>"
+        )
+
+        # Construction du contenu HTML pour les sections Tâches et Hard Skills avec barre de progression
+        html_content = f"""
+        <div style="text-align: center; margin-top: 20px;color:#1B4F72;">
+            <h2 style="color: rgb(113, 224, 203);">COMPETENCES</h2>
+            <div style="background-color: #eee; border-radius: 10px; width: 80%; height: 24px; margin: 10px auto; position: relative;">
+                <div style="background-color: rgb(113, 224, 203); width: {score_total / 12 * 100}%; height: 100%; border-radius: 10px; position: absolute;">
+                    <span style="color: #fff; font-weight: bold; position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{int(score_total / 12 * 100)}%</span>
+                </div>
+            </div>
+            <p><strong>Tâches réalisées </strong> <span style="font-weight:bold; color: {couleur_taches};">{'IDENTIFIABLE' if len(taches) >= 8 else 'NON IDENTIFIABLE ❌'}</span></p>
+            <p><strong>Outils techniques </strong> <span style="font-weight:bold; color: {couleur_hard_skills};">{'IDENTIFIABLE' if len(hard_skills) >= 4 else 'NON IDENTIFIABLE ❌'}</span></p>
+        </div>
+        """
+
+        # Affichage du contenu HTML dans Streamlit
+        st.markdown(html_content, unsafe_allow_html=True)
+
+        st.markdown(commentaire_hard_skills, unsafe_allow_html=True)
+        st.markdown(commentaire_taches, unsafe_allow_html=True)
+    st.markdown("#")
+    title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h3 style="color:  #34495E; text-align: center; font-weight: bold;">L'opportunitée</h4>
+            </div>
+            """
+
+    st.markdown(title_html, unsafe_allow_html=True)
+    afficher_grade_cv(calculer_note_globale_job(), 1)
+    with st.expander("**Details sur le detail de l'offre d'emploi**"):
+        parsed_data = st.session_state["job_offer_data"]
+        # Extraction des informations pertinentes
+        numero = ", ".join(parsed_data.get("numero", []))
+        mail = ", ".join(parsed_data.get("mail", []))
+        nom_prenom = ", ".join(parsed_data.get("nom_prenom", []))
+        adresse = ", ".join(parsed_data.get("location", []))
+
+        # Calculer le pourcentage d'identification
+        elements_presents = sum([bool(adresse)])
+        pourcentage_identification = int((elements_presents / 1) * 100)
+
+        # Définition des couleurs
+        couleur_identifiable = "#006400"  # Vert foncé
+        couleur_non_identifiable = "#8B0000"  # Rouge foncé
+
+        html_content = f"""
+        <div style="text-align: center;color:#1B4F72;">
+            <h2 style="color: rgb(113, 224, 203);">IDENTITÉ</h2>
+            <div style="background-color: #eee; border-radius: 10px; width: 80%; height: 24px; margin: 10px auto; position: relative;">
+                <div style="background-color: rgb(113, 224, 203); width: {pourcentage_identification}%; height: 100%; border-radius: 10px; position: absolute;">
+                    <span style="color: #fff; font-weight: bold; position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{pourcentage_identification}%</span>
+                </div>
+            </div> 
+            <p><strong>La region de l'opportunitée</strong> <span style="font-weight:bold; color: {couleur_identifiable if adresse else couleur_non_identifiable};">{'IDENTIFIABLE ' if adresse else 'NON IDENTIFIABLE ❌'}</span></p>
+            
+        </div>
+        """
+        st.markdown("#")
+
+        st.markdown(html_content, unsafe_allow_html=True)
+        ##### SOFT SKILLS
+        soft_skills = parsed_data.get("soft_skills", [])
+
+        # Calcul de la note basée sur le nombre de soft skills
+        nombre_soft_skills = len(soft_skills)
+        note_soft_skills = min(nombre_soft_skills / 4, 1) * 100
+        couleur_score = (
+            "#ff0000" if note_soft_skills < 50 else "#fff"
+        )  # Rouge pour les scores < 50%, blanc sinon
+        commentaire = (
+            "<p style='color: #006400; font-size: 14px;font-weight:bolder;'>Suffisaments d'élements pour comprendre les attentes de l'équipe </p>"
+            if nombre_soft_skills >= 4
+            else "<p style='color: red; font-size: 14px;font-weight:bolder;'> Manque d'élement afin d'etre proche des attentes de l'équipe</p>"
+        )
+
+        # Construction du contenu HTML pour la section Qui vous êtes
+        html_content = f"""
+        <div style="text-align: center; margin-top: 20px;color:#1B4F72;">
+            <h2 style="color: rgb(113, 224, 203);">SOFT SKILLS</h2>
+            <div style="background-color: #eee; border-radius: 10px; width: 80%; height: 24px; margin: 10px auto; position: relative;">
+                <div style="background-color: rgb(113, 224, 203); width: {note_soft_skills}%; height: 100%; border-radius: 10px; position: absolute;">
+                    <span style="color: {couleur_score}; font-weight: bold; position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{int(note_soft_skills)}%</span>
+                </div>
+            </div>
+            {commentaire}
+        </div>
+        """
+
+        # Affichage du contenu HTML dans Streamlit
+        st.markdown(html_content, unsafe_allow_html=True)
+        ######## ACADEMIQUES
+        diplomes = parsed_data.get("diplome", [])
+        langues = parsed_data.get("langue", [])
+
+        # Calculer le score d'identifiabilité (50% pour chaque section présente)
+        score_diplome = (50 if diplomes else 0) + (50 if langues else 0)
+        couleur_barre = (
+            "#006400" if score_diplome > 50 else "#8B0000"
+        )  # Vert foncé si score > 50, rouge foncé sinon
+
+        langue_message = (
+            "IDENTIFIABLE"
+            if langues
+            else "Aucune langue indiquée dans l'offre.  L'Anglais est une langue habituelement recherchée."
+        )
+        couleur_langue = (
+            "#006400" if langues else "#8B0000"
+        )  # Vert foncé si présente, rouge foncé sinon
+
+        # Construction du contenu HTML pour la section Académique et Langues avec barre de progression
+        html_content = f"""
+        <div style="text-align: center; margin-top: 20px;color:#1B4F72;">
+            <h2 style="color: rgb(113, 224, 203);">ACADEMIE</h2>
+            <div style="background-color: #eee; border-radius: 10px; width: 80%; height: 24px; margin: 10px auto; position: relative;">
+                <div style="background-color: rgb(113, 224, 203); width: {score_diplome}%; height: 100%; border-radius: 10px; position: absolute;">
+                    <span style="color: #fff; font-weight: bold; position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{score_diplome}%</span>
+                </div>
+            </div>
+            <p><strong>Niveau académique </strong> <span style="font-weight:bold; color: {couleur_barre};">{'IDENTIFIABLE' if diplomes else 'NON IDENTIFIABLE ❌'}</span></p>
+            <p><strong>Niveau de Langue</strong> <span style="font-weight:bold; color: {couleur_langue};">{langue_message}</span></p>
+        </div>
+        """
+
+        # Affichage du contenu HTML dans Streamlit
+        st.markdown(html_content, unsafe_allow_html=True)
+        ####### stack
+
+        taches = parsed_data.get("tache", [])
+        hard_skills = parsed_data.get("hard_skills", [])
+        job_type = parsed_data.get("job_type", "votre secteur")
+
+        # Calcul du score d'identifiabilité
+        score_taches = (
+            min(len(taches) / 8, 1) * 6
+        )  # 6 points possibles, besoin de 8 tâches pour le max
+        score_hard_skills = (
+            min(len(hard_skills) / 4, 1) * 6
+        )  # 6 points possibles, besoin de 4 compétences pour le max
+        score_total = score_taches + score_hard_skills
+        score_totale = score_total / 12 * 100
+        # Détermination des couleurs et des messages basés sur l'identifiabilité
+        couleur_taches = (
+            "#006400" if len(taches) >= 8 else "#8B0000"
+        )  # Vert foncé si >= 8 tâches, rouge foncé sinon
+        couleur_hard_skills = (
+            "#006400" if len(hard_skills) >= 4 else "#8B0000"
+        )  # Vert foncé si >= 4 compétences, rouge foncé sinon
+
+        commentaire_hard_skills = (
+            ""
+            if len(hard_skills) >= 4
+            else "<p style='color: red; font-size: 14px;text-align: center;'></p>"
+        )
+        commentaire_taches = (
+            ""
+            if len(taches) >= 8
+            else f"<p style='color: red; font-size: 14px;font-weight:bold;text-align: center;'> l'offre manque un peu d'élement</p>"
+        )
+
+        # Construction du contenu HTML pour les sections Tâches et Hard Skills avec barre de progression
+        html_content = f"""
+        <div style="text-align: center; margin-top: 20px;color:#1B4F72;">
+            <h2 style="color: rgb(113, 224, 203);">COMPETENCES</h2>
+            <div style="background-color: #eee; border-radius: 10px; width: 80%; height: 24px; margin: 10px auto; position: relative;">
+                <div style="background-color: rgb(113, 224, 203); width: {score_total / 12 * 100}%; height: 100%; border-radius: 10px; position: absolute;">
+                    <span style="color: #fff; font-weight: bold; position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{int(score_total / 12 * 100)}%</span>
+                </div>
+            </div>
+            <p><strong>Tâches réalisées </strong> <span style="font-weight:bold; color: {couleur_taches};">{'IDENTIFIABLE' if len(taches) >= 8 else 'NON IDENTIFIABLE ❌'}</span></p>
+            <p><strong>Outils techniques </strong> <span style="font-weight:bold; color: {couleur_hard_skills};">{'IDENTIFIABLE' if len(hard_skills) >= 4 else 'NON IDENTIFIABLE ❌'}</span></p>
+        </div>
+        """
+
+        # Affichage du contenu HTML dans Streamlit
+        st.markdown(html_content, unsafe_allow_html=True)
+
+        st.markdown(commentaire_hard_skills, unsafe_allow_html=True)
+        st.markdown(commentaire_taches, unsafe_allow_html=True)
+
+
+def afficher_notation_etoiles(note_sskill):
+    if note_sskill < 0:
+        html_notation = "<span>❓</span>"
+    else:
+        etoiles_entieres = note_sskill // 20
+        demi_etoile = (note_sskill % 20) // 10
+        etoiles_noires = 5 - etoiles_entieres - demi_etoile
+
+        html_notation = (
+            "<span style='color: gold;'>"
+            + "⭐" * int(etoiles_entieres)
+            + "</span>"
+            + ("<span style='color: gold;'>⭐½</span>" if demi_etoile else "")
+            + "<span style='color: black;'>"
+            + "⚫" * int(etoiles_noires)
+            + "</span>"
+        )
+
+    return html_notation
+
+
+def afficher_score_card(
+    match_score,
+    note_sskill,
+    note_stack,
+    note_tache,
+    note_langue,
+    note_diplome,
+    note_exp,
+):
+    # Convert negative score to 0 for display
+
+    # Round the match score to two decimal places
+    match_score = round(match_score, 0)
+
+    # HTML and CSS
+    html_content = f"""
+    <style>
+
+        
+        .score-container {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: #6200EE;
+            color: white;
+            margin: auto;
+            padding: 20px;
+            position: relative;
+        }}
+
+        .score-container::after {{
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            font-size:3vw;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 20px solid #6200EE;
+            transform: translateX(-50%);
+        }}
+
+        .score {{
+            font-size: 2.5vw;
+            font-weight: bold;
+            line-height: 1em;
+        }}
+
+        .score-label {{
+            font-size: 1.5vw;
+            margin-bottom: 5px;
+            text-align:center;
+            font-weight: bold;
+            text-align:center;
+        }}
+        
+        .summary {{
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin: 2em auto 0 auto;
+            width: 90%;
+            max-width: 400px;
+            
+            
+        }}
+         
+
+        .summary-item {{
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            display: flex;
+            font-weight: bold;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }}
+
+        .summary-item2 {{
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            color:rgb(113,224,203);
+            display: flex;
+            font-weight: bold;
+            background: white;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }}
+
+        .summary-item:last-child {{
+            border-bottom: none;
+        }}
+    </style>
+
+    <div class="score-container">
+        <div class="score">{int(match_score)}%</div>
+        <div class="score-label"> de chance de passer le test IA</div>
+    </div>
+    
+    <div class="summary">
+        <div class="summary-item">
+            <span>Personnalité </span>
+            <span>{afficher_notation_etoiles(note_sskill)}</span>
+        </div>
+        <div class="summary-item2">
+            <span>Outils </span>
+            <span>{afficher_notation_etoiles(note_stack)}</span>
+        </div>
+        <div class="summary-item">
+            <span>Taches </span>
+            <span>{afficher_notation_etoiles(note_tache)}</span>
+        </div>
+        <div class="summary-item2">
+            <span>Niveau de langue :</span>
+            <span>{afficher_notation_etoiles(note_langue)}</span>
+        </div>
+        <div class="summary-item">
+            <span>Formation </span>
+            <span>{afficher_notation_etoiles(note_diplome)}</span>
+        </div>
+        <div class="summary-item2">
+            <span>Experience </span>
+            <span>{afficher_notation_etoiles(note_exp)}</span>
+        </div>
+    </div>
+    """
+
+    st.markdown(html_content, unsafe_allow_html=True)
+
+
+def afficher_conseil_HS(stacks, note_stack):
+    # Afficher un message général basé sur la note de stack
+    if note_stack < 0:
+        st.info("Pas d'outils requis.")
+        return  # Sortir de la fonction car aucune autre vérification n'est nécessaire
+    elif note_stack < 30:
+        st.error("**Votre maîtrise des outils est plus qu'insuffisante.**")
+    elif note_stack < 60:
+        st.warning(
+            "Votre maîtrise des outils est moyenne, des améliorations sont possibles."
+        )
+    else:
+        st.success("**Votre maîtrise des outils est excellente.**")
+
+    # Extraire les compétences recherchées et leur correspondance RGmatch
+    skills_recherche = stacks["skillrecherche"]
+    skills_dispo = stacks["skilldispo"]
+    rgmatch = stacks["RGmatch"]
+
+    # Identifier les compétences manquantes basées sur un RGmatch de 0
+    missing_skills = [
+        skill for skill, match in zip(skills_recherche, rgmatch) if match == 0
+    ]
+
+    # Limiter à 5 compétences manquantes
+    missing_skills_limited = missing_skills[:5]
+    missing_skills_str = " -- ".join(missing_skills_limited)
+
+    if missing_skills_limited:
+        additional_info = "..." if len(missing_skills) > 5 else ""
+        st.warning(
+            f"Maitrisez vous ces outils? : **{missing_skills_str}**{additional_info}"
+        )
+    else:
+        st.success("Tous les outils nécessaires sont présents dans votre stack.")
+
+
+def evaluate_job_fit(talent_type, job_type):
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    # In the first column, display the title "Job Category"
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">DOMAINE</h2>
+            </div>
+            """
+
+        st.markdown(title_html, unsafe_allow_html=True)
+    with col2:
+        if talent_type == job_type:
+            # The talent type matches the job type
+            st.success(f"Votre profil correspond à celui recherché **{job_type}**.")
+        else:
+            # The talent type does not match the job type
+            st.error(
+                f"L'offre d'emploi decris un specialiste : **{clarifier_nom(job_type)}**, Mais votre est profil: **{clarifier_nom(talent_type)}**.",
+            )
+
+
+######
+
+
+def evaluate_stack_fit(match_result):
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    # In the first column, display the title "Job Category"
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">STACK</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+
+    # In the second column, display the graph
+    with col2:
+        if match_result["NOTE_STACK"] < 0:
+            st.info("**Aucune mention d'outils specifique **")
+
+        else:
+            st.plotly_chart(
+                affichage_scatter(match_result["STACKS"]),
+                use_container_width=True,
+            )
+
+    # In the third column, display the comments or advice
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;">Commentaire</h4>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+
+        st.markdown("#")
+        st.markdown("#")
+        afficher_conseil_HS(match_result["STACKS"], match_result["NOTE_STACK"])
+
+
+def niveau_diplome(diplome_job, diplome_talent, note):
+    # Create three columns with specified width ratios
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    # Display the title "Language Level" in the first column
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">FORMATION</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+
+    # Display a simple success graph in the second column
+    with col2:
+
+        if note < 0:
+            st.info("**Aucune specification sur le niveau de formation**")
+        elif note > 70:
+            st.success("**Vous etes à niveau**")
+        else:
+            st.error("**Vous ne semblez pas suffisament qualifié.e** ")
+
+    # Display evaluation comments in the third column
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;">Commentaire</h4>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+
+        st.markdown("#")
+
+        if note == 100:
+            st.success(
+                f"Niveau requis: **{diplome_job}**, Votre niveau: **{diplome_talent}**."
+            )
+
+        elif note < 0:
+            pass
+
+        else:
+            st.error(
+                f"Niveau scolaire requis:**{diplome_job}**, Votre niveau: **{diplome_talent}**. Considérer l'importance du diplome sur ce poste."
+            )
+
+
+def evaluate_language_detail(detail_langue, note):
+    echelle_CECR_inverse = {
+        6: "niveau C2",
+        5: "niveau C1",
+        4: "niveau B2",
+        3: "niveau B1",
+        2: "niveau A2",
+        1: "niveau A1",
+    }
+
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">LANGUE</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+    with col2:
+        if note < 0:
+            st.info("**Aucune specification sur le niveau de langue attendu**")
+        else:
+            # Placeholder for graphical representation
+            afficher_barre_progression_custom(note)
+
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;">Commentaire</h4>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+
+        st.markdown("#")
+        for idx in detail_langue["langue"]:
+            langue = detail_langue["langue"][idx]
+            desired_level = detail_langue["note"][idx]
+            candidate_level = detail_langue["note_prospect"][idx]
+            notation = detail_langue["notation"][idx]
+
+            niveau_cecr_desired = echelle_CECR_inverse.get(
+                desired_level, "Non mentioné"
+            )
+            niveau_cecr_candidate = echelle_CECR_inverse.get(
+                candidate_level, "Non mentioné"
+            )
+
+            if notation == 1:
+                st.success(
+                    f"**{langue.capitalize()}**: Votre niveau pour la langue ({niveau_cecr_candidate}) match la necessité pour ce poste ({niveau_cecr_desired})."
+                )
+            else:
+                st.warning(
+                    f"**{langue.capitalize()}**: Votre niveau pour la langue({niveau_cecr_candidate}) est en dessous du niveau requis :({niveau_cecr_desired})."
+                )
+
+
+def evaluate_taches(taches, note_globale):
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">Taches</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+    # Barre de remplissage pour la note globale
+    with col2:
+        if note_globale < 0:
+            st.markdown(
+                "Aucune compétence comportementale n'est demandée pour ce poste."
+            )
+        else:
+            st.markdown("### ")
+            afficher_barre_progression_custom(int(note_globale))
+
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;">Commentaire</h4>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+
+        for i, skill in enumerate(taches["skillrecherche"][:5]):
+            match_ajuste = taches["match_ajuste"][i]
+            if match_ajuste > 0.6:
+                st.markdown(
+                    f":bleu[Besoin: **{skill}:**] ➔| Vous: :green[**{taches['skilldispo'][i]}**]"
+                )
+            elif match_ajuste > 0.3:
+                st.markdown(
+                    f":bleu[Besoin: **{skill}:**] ➔| Vous: :orange[**{taches['skilldispo'][i]}**]"
+                )
+            else:
+                st.markdown(f":red[- **{skill.capitalize()}:** Manquant]")
+        if len(taches["skillrecherche"]) > 5:
+            st.markdown("...")
+
+
+def afficher_grade_cv(score_global, index):
+    # Déterminer le grade et la couleur basée sur le score global
+    if score_global >= 75:
+        grade, couleur = "A", "#006400"
+        conseil = (
+            "La comprehension de votre profil est plus que satisfaisant"
+            if index == 0
+            else "Votre offre est bien structurée pour être I.A compatible"
+        )
+    elif score_global >= 50:
+        grade, couleur = "B", "#FFD700"
+        conseil = (
+            "Des informations importantes peuvent manquer et donc vous faire rater le passage I.A"
+            if index == 0
+            else "Votre offre peut manquer d'informations importantes pour un filtrage I.A optimal"
+        )
+    else:
+        grade, couleur = "C", "#8B0000"
+        conseil = (
+            "Vous allez forcément rater des offres car le format choisi ne permet pas une lisibilité optimale"
+            if index == 0
+            else "Le format de l'offre risque de faire rater des candidatures potentielles à cause d'une lisibilité non optimale"
+        )
+
+    # Construction du contenu HTML pour afficher le grade et le conseil adapté
+    html_content = f"""
+    <div style="text-align: center; margin-top: 20px;">
+        <div style="border: 5px solid {couleur}; display: inline-block; padding: 20px; border-radius: 10px; background-color: #fff;">
+            <h1 style="color: {couleur}; font-size: 3vw;">{grade}</h1>
+        </div>
+        <p style="font-size: 1.0vw;font-weight:bolder; margin-top: 2px;text-align:center;color:{couleur};">{conseil}</p>
+    </div>
+    """
+
+    # Affichage du contenu HTML dans Streamlit
+    st.markdown(html_content, unsafe_allow_html=True)
+
+
+def evaluate_soft_skills(detail_note_sskill, overall_note):
+
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">SOFT SKILLS</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+
+    with col2:
+        if overall_note < 0:
+            st.markdown(
+                "Aucune compétence comportementale n'est demandée pour ce poste."
+            )
+        else:
+            # Affichage d'une barre de progression représentant la note globale des soft skills
+            # La note est supposée être sur 100, ajustez si nécessaire
+            afficher_barre_progression_custom(overall_note)
+
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;">Commentaire</h4>
+            </div>
+            """
+
+        st.markdown(title_html, unsafe_allow_html=True)
+        if overall_note < 0:
+            st.markdown(
+                "Aucune compétence comportementale n'est demandée pour ce poste."
+            )
+
+        else:
+            cpt = 0
+            for categorie, indice, match in zip(
+                detail_note_sskill["categorie"],
+                detail_note_sskill["Indices"],
+                detail_note_sskill["match"],
+            ):
+
+                if match == 1:
+                    st.markdown(
+                        f":green[- **{categorie}** : {indice if indice else 'Pas de détail spécifique.'}]"
+                    )
+                    cpt = cpt + 1
+                else:
+                    st.markdown(f":red[- **{categorie}** : Nécessaire pour ce poste]")
+                    cpt = cpt + 1
+                if cpt == 4:
+                    break
+
+
+def afficher_barre_progression_custom(note):
+    # Définir la couleur du texte en fonction de la note
+    couleur_texte = "#fff" if note >= 50 else "#ff0000"  # Blanc si >= 50%, rouge sinon
+
+    # HTML pour la barre de progression
+    html_content = f"""
+    <div style="background-color: #eee; border-radius: 10px; width: 80%; height: 24px; margin: 10px auto; position: relative;">
+        <div style="background-color: rgb(113, 224, 203); width: {note}%; height: 100%; border-radius: 10px; position: absolute;">
+            <span style="color: {couleur_texte}; font-weight: bold; position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{note}%</span>
+        </div>
+    </div>
+    """
+
+    # Utiliser st.markdown pour afficher la barre de progression personnalisée
+    st.markdown(html_content, unsafe_allow_html=True)
+
+
+def test_affichage():
+    match_result = st.session_state["matching_stat"]
+    st.markdown("#")
+    st.markdown("#")
+    ###### AFFICHAGE DU SCORE GLOBAL
+    afficher_score_card(
+        match_result["MATCH_SCORE"],
+        match_result["NOTE_SSKILL"],
+        match_result["NOTE_STACK"],
+        match_result["NOTE_TACHE"],
+        match_result["NOTE LANGUE"],
+        match_result["NOTE_DIPLOME"],
+        match_result["NOTE_EXP"],
+    )
+    st.markdown("#")
+    st.markdown("#")
+    evaluate_job_fit(match_result["TALENT_TYPE"], match_result["JOB_TYPE"])
+    st.markdown("#")
+    st.markdown("#")
+    niveau_diplome(
+        diploma(int(match_result["MAX_DIPLOMA_CANDIDAT"])),
+        diploma(int(match_result["REQUIERED_DIPLOMA"])),
+        match_result["NOTE_DIPLOME"],
+    )
+    st.markdown("#")
+    st.markdown("#")
+
+    evaluate_soft_skills(
+        match_result["DETAIL_NOTE_SSKILL"], match_result["NOTE_SSKILL"]
+    )
+
+    st.markdown("#")
+    st.markdown("#")
+    evaluate_language_detail(match_result["DETAIL_LANGUE"], match_result["NOTE LANGUE"])
+
+    st.markdown("#")
+    st.markdown("#")
+
+    evaluate_stack_fit(match_result)
+
+    st.markdown("#")
+    st.markdown("#")
+    evaluate_taches(match_result["TACHE"], match_result["NOTE_TACHE"])
+    st.write(st.session_state)
+
+
+def visionnage_test():
+
+    qualité_cv, rest = st.columns([3, 7], gap="large")
+    with qualité_cv:
+        afficher_qualites_cv()
+    with rest:
+        test_affichage()

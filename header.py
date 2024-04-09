@@ -136,7 +136,8 @@ def header() -> str:
             None,
             [
                 "Accueil",
-                "NEST IA",
+                "Recherche guidée",
+                "Test des filtres emploi",
                 "Qui sommes nous?",
             ],
             icons=[
@@ -212,9 +213,28 @@ def accueil():
         st.markdown(
             """
                 <style>
+
                     body {
-                        background-color: #F4F4F4; /* Couleur de fond légère */
+                        background-color: #F4F4F4;
                         text-align: center;
+                        font-size: 1.4vw;
+                    }
+                    .container {
+                        max-width: 80vw; /* Ajustement pour rendre le conteneur réactif */
+                        margin: 2vw auto;
+                        padding: 2vw;
+                        background-color: #FFFFFF;
+                        border-radius: 1vw;
+                        box-shadow: 0 0 1vw rgba(0, 0, 0, 0.1);
+                    }
+
+                    .header {
+                        color: rgb(113,224,203);
+                        font-size: clamp(1.0vw, 2.5%, 1.2vw); /* Ajustement dynamique de la taille */
+                    }
+                    .explication, h1, h2, summary {
+                        color: #34495E;
+                        font-size: clamp(1.5vw, 3%, 1.8vw); /* Utilisation de clamp pour un ajustement dynamique */
                     }
                     .container {
                         max-width: 1000px;
@@ -222,14 +242,13 @@ def accueil():
                         padding: 20px;
                         background-color: #FFFFFF; /* Fond blanc pour le contenu */
                         border-radius: 10px;
+                        font-size: 1.7vw;
                         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Ombre douce */
                     }
 
                     .header{
-                        color: rgb(113,224,203); /* Gris Anthracite pour les textes */
-                    }
-                    .explication, h1, h2, summary {
-                        color: #34495E; /* Gris Anthracite pour les textes */
+                        color: rgb(113,224,203);
+                        font-size: 1.0vw; /* Gris Anthracite pour les textes */
                     }
                    
                     .explication {
@@ -248,7 +267,7 @@ def accueil():
                         flex: 1;
                         background-color: #DAE8FC;
                         margin: 10px;
-                        font-size: 0.9em;
+                        font-size: 1.3vw;
                         text-align: center;
                         /* Vert clair pour les axes d'analyse */
                         padding: 20px;
@@ -259,7 +278,7 @@ def accueil():
                         flex: 1;
                         background-color: rgb(113,224,203);
                         margin: 10px;
-                        font-size: 0.9em;
+                        font-size: 1.4vw;
                         text-align: center;
                         /* Vert clair pour les axes d'analyse */
                         padding: 20px;
@@ -279,8 +298,8 @@ def accueil():
                         <p> NEST utilise des axes d'analyse spécifiques pour aligner vos compétences et aspirations avec les opportunités de carrière idéales.</p>
                     </div>
                     <div class="expander">
-                        <details>
-                            <summary>Decouvrez en detail les axes d'analyses clés primordiales pour NEST</summary>
+                        <details open>
+                            <summary>Voici en detail les axes d'analyse</summary>
                             <div class="axe-analyse-explication">
                                 <div class="axe-analyse">
                                     <h3>Formation Académique</h3>

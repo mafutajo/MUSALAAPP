@@ -453,7 +453,7 @@ def MEF_final(table: dict) -> dict:
                 ]
             )
         ),
-        3,
+        1,
     )
     return fichier_retour
 
@@ -1181,6 +1181,75 @@ def filtrer_et_dedoublonner(liste_taches):
     return taches_uniques
 
 
+def filtrer_liste_postes(postes):
+    # Mots à exclure exactement
+    exclusions_exactes = {
+        "serveur",
+        "équipier",
+        "ingénieur",
+        "ingenieur",
+        "responsable",
+        "automobile",
+        "apprenti",
+        "chargé",
+        "senior",
+        "sénior",
+        "dévellopeur",
+    }
+    # Liste des sous-chaînes à exclure dans n'importe quel mot
+    exclusions_contenant = ["polyvalent", "bureau"]
+
+    # Filtrage
+    postes_filtres = [
+        poste
+        for poste in postes
+        if poste not in exclusions_exactes
+        and not any(exclusion in poste for exclusion in exclusions_contenant)
+    ]
+
+    return postes_filtres
+
+
+def enlever_points(competences):
+    competences_sans_points = [comp.rstrip(".") for comp in competences]
+    return competences_sans_points
+
+
+def filtrer_taches(tasks):
+    sorted_tasks = sorted(
+        tasks, key=len, reverse=True
+    )  # Trier par longueur décroissante
+    filtered_tasks = []
+    for task in sorted_tasks:
+        if not any(
+            task in other_task and task != other_task for other_task in filtered_tasks
+        ):
+            filtered_tasks.append(task)
+    return filtered_tasks
+
+
+def nettoyer_taches(taches):
+    # Expression régulière pour identifier les fins de phrases à supprimer
+    pattern = r"\s+(des|de|et|les|le|la|du|d’une|d’un|en|de mon)$"
+
+    def nettoyer_tache(tache):
+        # Utilise l'expression régulière pour supprimer les fins spécifiées de la tâche
+        tache_nettoyee = re.sub(pattern, "", tache)
+        return tache_nettoyee
+
+    # Applique la fonction de nettoyage à chaque tâche dans la liste
+    taches_nettoyees = [nettoyer_tache(tache) for tache in taches]
+
+    return taches_nettoyees
+
+
+def sliding_window2(listed_text_cv, window_size, overlap):
+    step = window_size - overlap
+    return [
+        listed_text_cv[i : i + window_size] for i in range(0, len(listed_text_cv), step)
+    ]
+
+
 def parsing_joboffer(
     text_cv: str | st.runtime.uploaded_file_manager.UploadedFile,
 ) -> dict:
@@ -1194,21 +1263,21 @@ def parsing_joboffer(
 
     window_size = 50
     overlap = 25
-    base = sliding_window(listed_text_cv, window_size, overlap)
+    base = sliding_window2(listed_text_cv, window_size, overlap)
 
     print(base)
     Parseur = model_parseur_()
 
-    # Prédiction avec le modèle pour chaque fenêtre
-    predictions = []
-    for window in base:
-        # Concaténer les segments de la fenêtre pour la prédiction
-        window_text = " ".join(window)
-        predict_text, raw = Parseur.predict([window_text], split_on_space=True)
-        predictions.extend(
-            predict_text[0]
-        )  # Supposer que predict retourne une liste de listes
-    # Post-traitement pour privilégier les classes d'entité sur "O"
+    # st.write(base)
+    # Convertir chaque fenêtre en une liste de mots (pour split_on_space=False)
+    # windows_as_word_lists = [base]  # Assurez-vous que `window` est un str ici
+
+    # Appeler le modèle une seule fois avec la liste des listes de mots
+    predictions, _ = Parseur.predict(base, split_on_space=False)
+    from itertools import chain
+
+    predictions = list(chain.from_iterable(predictions))
+
     final_predictions = []
     for pred in predictions:
         if pred != "O" or not final_predictions:
@@ -1268,6 +1337,12 @@ def parsing_joboffer(
     # )
     sortie.update(tache=filtrer_et_dedoublonner(sortie["tache"]))
 
+    sortie.update(
+        tache=enlever_points(
+            filtrer_taches(nettoyer_taches(nettoyer_taches(sortie["tache"])))
+        )
+    )
+    sortie.update(hard_skills=enlever_points(sortie["hard_skills"]))
     sortie.update(
         diplome=filter_substring(
             sortie["diplome"],
@@ -1357,9 +1432,10 @@ def parsing_joboffer(
         "fibre",
         "analyses",
         "dotee d'une",
+        "dote d'un",
     ]
     sortie.update(
-        soft_skills=[x for x in sortie["soft_skills"] if x not in common_eror]
+        soft_skills=[x for x in sortie["soft_skills"] if x.lower() not in common_eror]
     )
 
     sortie.update(
@@ -1373,7 +1449,7 @@ def parsing_joboffer(
         key=lambda post: text_cv.find(post),
     )
 
-    sortie.update(post=sorted_filtered_posts)
+    sortie.update(post=filtrer_liste_postes(sorted_filtered_posts))
 
     sortie.update(post=clean_task(clean_task(clean_task(clean_task(sortie["post"])))))
 
@@ -1438,7 +1514,7 @@ def correspondance_hskill(result_job: dict, result_resume: dict) -> dict:
             "RGmatch": int(1),
         }
         out.append(line)
-        return pd.DataFrame(out).to_dict(orient="list"), 0
+        return pd.DataFrame(out).to_dict(orient="list"), -1
 
     if len(result_resume) == 0:
         result_resume = ["pas de hardskills chez le candidat"]
@@ -1789,11 +1865,20 @@ def calcul_diplome(langue_job: pd.DataFrame, langue_prospect: pd.DataFrame) -> f
     """synthétise les diplomes en note sur 100"""
 
     df_job = mise_en_forme_diplome(langue_job)
+    df_job["note"] = pd.to_numeric(df_job["note"], errors="coerce")
+
     df_prospect = mise_en_forme_diplome(langue_prospect)
+    df_prospect["note"] = pd.to_numeric(df_prospect["note"], errors="coerce")
 
     ##### GARDER SEULEMENT LES DIPLOMES ##########
     df_job = df_job[df_job["diplome_type"] == "diplome"]
 
+    min_job = (
+        df_job.nsmallest(1, "note")
+        if not df_job[df_job["note"] > 0].empty
+        else df_job[df_job["note"] > 0].nsmallest(1, "note")
+    )
+    min_job["note"] = pd.to_numeric(min_job["note"], errors="coerce")
     df_prospect = df_prospect[df_prospect["diplome_type"] == "diplome"]
 
     if df_job.empty:
@@ -1804,7 +1889,7 @@ def calcul_diplome(langue_job: pd.DataFrame, langue_prospect: pd.DataFrame) -> f
     if df_prospect.empty:
         return 0
 
-    if df_prospect["note"].max() >= df_job["note"].max():
+    if df_prospect["note"].max() >= min_job["note"].iloc[0]:
         return 1
     else:
         return 0
@@ -1887,11 +1972,11 @@ def mise_en_forme_diplome(liste_diplome: list) -> pd.DataFrame:
                 [pd_sortie, pd.DataFrame.from_records(new_row, index=[0])],
                 ignore_index=True,
             )
-    new_row = {"diplome": "nouveau", "note": 0, "diplome_type": "diplome"}
-    pd_sortie = pd.concat(
-        [pd_sortie, pd.DataFrame.from_records(new_row, index=[0])],
-        ignore_index=True,
-    )
+    # new_row = {"diplome": "nouveau", "note": 0, "diplome_type": "diplome"}
+    # pd_sortie = pd.concat(
+    #     [pd_sortie, pd.DataFrame.from_records(new_row, index=[0])],
+    #     ignore_index=True,
+    # )
 
     return pd_sortie
 
@@ -1996,10 +2081,7 @@ def correspondance_sskill(result_job: dict, result_resume: dict) -> dict:
             out.append(line)
         best = pd.DataFrame(out)
         return (
-            best.sort_values("match", ascending=False)
-            .groupby(["skillrecherche", "match"])
-            .tail(1)
-            .to_dict(orient="list"),
+            best.sort_values("match", ascending=False).to_dict(orient="list"),
             0,
         )
 
@@ -2279,68 +2361,6 @@ def equivalence(grade):
         return "CURIEUX"
 
 
-def MATCH(job: str, prospect: str):
-    ################ HARDFIT
-    predictor = chargement_hardfit_()
-    result = predictor.predict_batch([job, prospect])
-
-    job_type = result[0][0][0]
-    prospect_type = result[1][0][0]
-    print(job_type)
-    print(prospect_type)
-
-    if job_type != prospect_type:
-        line = {"MATCH_SCORE": 0, "hard_skill": "", "LANGUE": "", "NOTE LANGUE": ""}
-        return line
-    else:
-        result_job = parsing_joboffer(job)
-        result_candidat = parsing_joboffer(prospect)
-
-        note_diplome = calcul_diplome(result_job["diplome"], result_candidat["diplome"])
-
-        tache, note_tache = correspondance_sskill(
-            result_job["tache"], result_candidat["tache"]
-        )
-        hskill, notehskill = correspondance_hskill(
-            result_job["hard_skills"], result_candidat["hard_skills"]
-        )
-        langue_df, note_langue = verif_langue(
-            result_job["langue"], result_candidat["langue"]
-        )
-        note_diplome = calcul_diplome(result_candidat["diplome"], result_job["diplome"])
-
-        df_sskill, note_sskill = CR_SSKILL(
-            result_job["soft_skills"], result_candidat["soft_skills"]
-        )
-
-        line = {
-            "MATCH_SCORE": (
-                note_sskill * 100
-                + notehskill * 100
-                + note_tache * 100
-                + note_langue
-                + note_diplome * 100
-            )
-            / 5,
-            "STACKS": hskill,
-            "LANGUE": langue_df,
-            "MAX_DIPLOMA_CANDIDAT": diploma(
-                mise_en_forme_diplome(result_candidat["diplome"])["note"].max()
-            ),
-            "REQUIERED_DIPLOMA": diploma(
-                mise_en_forme_diplome(result_job["diplome"])["note"].max()
-            ),
-            "TACHE": tache,
-            "DETAIL_NOTE_SSKILL": df_sskill,
-            "NOTE_SSKILL": note_sskill * 100,
-            "NOTE_STACK": notehskill * 100,
-            "NOTE_TACHE": note_tache * 100,
-            "NOTE LANGUE": note_langue,
-            "NOTE_DIPLOME": note_diplome * 100,
-        }
-        return line
-
-
 import tempfile
 import re
 
@@ -2359,12 +2379,13 @@ def niveau_experience(nombre_annees):
 
 
 def comparer_niveau_experience(niveau1, niveau2):
+
     # Convertir les niveaux d'expérience en valeurs numériques pour faciliter la comparaison
     niveau_numerique = {"junior": 1, "intermédiaire": 2, "senior": 3}
 
     # Obtenir la valeur numérique pour chaque niveau
-    val_niveau1 = niveau_numerique.get(niveau1.lower(), 0)
-    val_niveau2 = niveau_numerique.get(niveau2.lower(), 0)
+    val_niveau1 = niveau_numerique.get(str(niveau1).lower(), 0)
+    val_niveau2 = niveau_numerique.get(str(niveau2).lower(), 0)
 
     # Si le niveau1 est supérieur ou égal au niveau2, retourner 100, sinon 0
     if val_niveau1 >= val_niveau2:
@@ -2394,6 +2415,23 @@ def matching_offer_with_candidat(result_cv: dict, result_job_offer: dict):
     note_exp, detail_exp = comparer_niveau_experience(
         niveau_experience(result_cv["time_in_field"]), result_job_offer["time_in_field"]
     )
+    job = mise_en_forme_diplome(result_job_offer["diplome"])
+    if result_job_offer["job_type"] == result_cv["job_type"]:
+        match_type = 1
+    else:
+        match_type = 0
+    job["note"] = pd.to_numeric(job["note"], errors="coerce")
+    job_ = (
+        job.nsmallest(1, "note")
+        if not job[job["note"] > 0].empty
+        else job[job["note"] > 0].nsmallest(1, "note")
+    )
+    if not job_.empty:
+        # Votre DataFrame n'est pas vide; vous pouvez accéder à l'élément.
+        required_diploma = job_["note"].iloc[0]
+    else:
+        # Votre DataFrame est vide; gérez ce cas en conséquence.
+        required_diploma = 0
 
     line = {
         "Talent_name": result_job_offer["nom_prenom"],
@@ -2404,6 +2442,9 @@ def matching_offer_with_candidat(result_cv: dict, result_job_offer: dict):
         "TALENT_DIPLOME": result_job_offer["diplome"],
         "TALENT_LANGUE": result_job_offer["langue"],
         "TALENT_TACHE": result_job_offer["tache"],
+        "TYPE_MATCH": match_type,
+        "TALENT_TYPE": result_cv["job_type"],
+        "JOB_TYPE": result_job_offer["job_type"],
         # "TALENT_EXP": result_cv["parcours_pro"],
         # "TALENT_TIME_FIELD": result_cv["time_in_field"],
         # "TALENT_EXP": result_cv["parcours_pro"],
@@ -2417,11 +2458,10 @@ def matching_offer_with_candidat(result_cv: dict, result_job_offer: dict):
         "DETAIL_EXP": detail_exp,
         "STACKS": hskill,
         "LANGUE": langue_df.to_dict(),
-        "MAX_DIPLOMA_CANDIDAT": mise_en_forme_diplome(result_job_offer["diplome"])[
-            "note"
-        ].max(),
+        "MAX_DIPLOMA_CANDIDAT": required_diploma,
         "REQUIERED_DIPLOMA": mise_en_forme_diplome(result_cv["diplome"])["note"].max(),
         "TACHE": tache,
+        "LINK": result_job_offer["id_pdf_hashed"],
         "DETAIL_NOTE_SSKILL": df_sskill,
         "NOTE_SSKILL": note_sskill * 100,
         "NOTE_STACK": note_hskill * 100,
@@ -2451,12 +2491,12 @@ def calculer_match_score(
     ]
 
     poids = {
-        "hskill": 0.2,
-        "tache": 0.3,
+        "hskill": 0.25,
+        "tache": 0.25,
         "sskill": 0.2,
-        "langue": 0.05,
-        "diplome": 0.05,
-        "experience": 0.2,
+        "langue": 0.1,
+        "diplome": 0.1,
+        "experience": 0.1,
     }  # Exemple de poids pour chaque critère
 
     # Ajuster le poids si la note est négative (l'offre ne demande pas cet élément)
@@ -3368,9 +3408,26 @@ def match_visualisation(sortie):
             ######################  DIPLOME
 
             base_SKILLS = candidat["TALENT_DIPLOME"]
+
             hard_skills_list_display = []
             if base_SKILLS is None:
                 base_SKILLS = []
+            else:
+                based = mise_en_forme_diplome(candidat["TALENT_DIPLOME"])
+                based["note"] = pd.to_numeric(based["note"], errors="coerce")
+                min_score_row_with_zero_fallback = (
+                    based.nsmallest(1, "note")
+                    if based[based["note"] > 0].empty
+                    else based[based["note"] > 0].nsmallest(1, "note")
+                )
+                if len(min_score_row_with_zero_fallback["note"]) > 0:
+                    # It's safe to access the first element
+                    valeur = min_score_row_with_zero_fallback["note"].iloc[0]
+                else:
+                    # Handle the case where there is no data
+                    valeur = 0
+
+                base_SKILLS = [diploma(valeur)]
 
             if len(base_SKILLS) > 0:
                 for hard_skill in base_SKILLS:
@@ -3472,10 +3529,30 @@ def match_visualisation(sortie):
             c1, c2, c3 = st.columns((0.2, 0.6, 0.2), gap="large")
 
             with c2:
-                contact_info = st.button("Je postule", type="primary")
-            if contact_info:
-                st.write("lien pour contacté")
-                ########INFORMATION DE CONTACT
+                st.markdown("#")
+
+                st.markdown(
+                    f"""
+                    <a href="{candidat['LINK']}" target="_blank">
+                        <button style="
+                            background-color: #4CAF50; /* Green */
+                            border: none;
+                            color: white;
+                            padding: 15px 32px;
+                            text-align: center;
+                            text-decoration: none;
+                            display: inline-block;
+                            font-size: 16px;
+                            margin: 4px 2px;
+                            cursor: pointer;
+                            border-radius: 12px;
+                        ">
+                        Je postule
+                        </button>
+                    </a>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
     with colonne_technique:
         st.markdown("#")
