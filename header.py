@@ -60,7 +60,7 @@ def header() -> str:
     header_style = """
     <style>
         .musala-headerx {
-            font-size: 4vw; /* Taille de la police */
+            font-size: 5vw; /* Taille de la police */
             font-weight: 600; /* Épaisseur de la police */
             color: #1B4F72; /* Couleur de la police */
             text-align: center; /* Alignement du texte */
@@ -136,9 +136,10 @@ def header() -> str:
             None,
             [
                 "Accueil",
-                "Recherche guidée",
-                "Test des filtres emploi",
-                "Qui sommes nous?",
+                "The Market",
+                "Job Finder",
+                "Job Fit",
+                "About Nest",
             ],
             icons=[
                 "houe",

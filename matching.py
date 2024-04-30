@@ -18,7 +18,7 @@ import hashlib
 import io
 from itertools import count
 import time
-
+import matplotlib.pyplot as plt
 from pdfminer.high_level import extract_text
 from annotated_text import annotated_text
 from collections import Counter
@@ -243,9 +243,1245 @@ def cache_resume(raw_text: str) -> dict:
     return parsing_joboffer(raw_text)
 
 
+@st.cache_data  # Décorateur pour mettre en cache les résultats de la fonction
+def load_json_data(file_path):
+    with open(file_path, "r") as file:
+        data = json.load(file)
+    return data
+
+
+def normalize_skills(skill):
+    """
+    Normalise les compétences pour unifier les termes similaires.
+
+    Args:
+    skill (str): La compétence à normaliser.
+
+    Returns:
+    str: La compétence normalisée.
+    """
+    skill = skill.lower().strip()
+    if "power" in skill or "bi" in skill:
+        return "power bi"
+    return skill
+
+
+import statistics  # Import pour calculer la moyenne et la médiane
+
+
+def calculate_top_hard_skills(filtered_data, top_n=10):
+    """
+    Calcule et renvoie le top N des hard_skills les plus fréquents avec leur pourcentage par rapport
+    au nombre total d'offres d'emploi analysées ayant des hard_skills non vides. Renvoie également la médiane
+    et la moyenne du nombre de hard skills par offre.
+
+    Args:
+    filtered_data (list of dict): Données filtrées, chaque dictionnaire représentant une offre d'emploi.
+    top_n (int): Nombre de top compétences à retourner.
+
+    Returns:
+    dict: Dictionnaire contenant la liste des tuples (skill, count, percentage), la médiane et la moyenne
+    du nombre de hard skills par offre.
+    """
+    hard_skill_counts = {}
+    num_skills_per_offer = []  # Liste pour stocker le nombre de hard skills par offre
+
+    for item in filtered_data:
+        if "hard_skills" in item and item["hard_skills"]:
+            num_skills_per_offer.append(
+                len(item["hard_skills"])
+            )  # Ajouter le nombre de skills pour cette offre
+            normalized_skills = set(
+                normalize_skills(skill) for skill in item["hard_skills"]
+            )
+            for skill in normalized_skills:
+                if skill in hard_skill_counts:
+                    hard_skill_counts[skill] += 1
+                else:
+                    hard_skill_counts[skill] = 1
+
+    offers_with_skills_count = len(
+        num_skills_per_offer
+    )  # Nombre d'offres ayant au moins un hard_skill
+
+    # S'il n'y a aucune offre avec hard_skills, éviter la division par zéro
+    if offers_with_skills_count == 0:
+        return {"top_skills": [], "median_skills": 0, "mean_skills": 0}
+
+    # Trier les compétences par occurrence et renvoyer les top N
+    sorted_skills = sorted(hard_skill_counts.items(), key=lambda x: x[1], reverse=True)[
+        :top_n
+    ]
+    top_skills_with_percentage = [
+        (skill, count, (count / offers_with_skills_count) * 100)
+        for skill, count in sorted_skills
+    ]
+
+    # Calculer la médiane et la moyenne du nombre de hard skills par offre
+    median_skills = statistics.median(num_skills_per_offer)
+    mean_skills = statistics.mean(num_skills_per_offer)
+
+    return top_skills_with_percentage, median_skills, mean_skills
+
+
+def calculate_top_soft_skills(filtered_data, top_n=10):
+    """
+    Calcule et renvoie le top N des soft_skills les plus fréquents avec leur pourcentage par rapport
+    au nombre total d'offres d'emploi analysées ayant des soft_skills non vides. Renvoie également la médiane
+    et la moyenne du nombre de soft skills par offre.
+
+    Args:
+    filtered_data (list of dict): Données filtrées, chaque dictionnaire représentant une offre d'emploi.
+    top_n (int): Nombre de top compétences à retourner.
+
+    Returns:
+    dict: Dictionnaire contenant la liste des tuples (skill, count, percentage), la médiane et la moyenne
+    du nombre de soft skills par offre.
+    """
+    soft_skill_counts = {}
+    num_skills_per_offer = []  # Liste pour stocker le nombre de soft skills par offre
+
+    for item in filtered_data:
+        if "soft_skills" in item and item["soft_skills"]:
+            corrected_skills = [
+                correct_skill_name(skill) for skill in item["soft_skills"]
+            ]
+            num_skills_per_offer.append(
+                len(corrected_skills)
+            )  # Ajouter le nombre de skills pour cette offre
+            for skill in corrected_skills:
+                if skill in soft_skill_counts:
+                    soft_skill_counts[skill] += 1
+                else:
+                    soft_skill_counts[skill] = 1
+
+    offers_with_skills_count = len(
+        num_skills_per_offer
+    )  # Nombre d'offres ayant au moins un soft_skill
+
+    if offers_with_skills_count == 0:
+        return {"top_skills": [], "median_skills": 0, "mean_skills": 0}
+
+    sorted_skills = sorted(soft_skill_counts.items(), key=lambda x: x[1], reverse=True)[
+        :top_n
+    ]
+    top_skills_with_percentage = [
+        (skill, count, (count / offers_with_skills_count) * 100)
+        for skill, count in sorted_skills
+    ]
+
+    median_skills = statistics.median(num_skills_per_offer)
+    mean_skills = statistics.mean(num_skills_per_offer)
+
+    return top_skills_with_percentage, median_skills, mean_skills
+
+
+def correct_skill_name(skill):
+    corrections = {"AUTOMIE": "AUTONOMIE"}
+    return corrections.get(
+        skill, skill
+    )  # Retourne la correction si disponible, sinon retourne le skill original
+
+
+import plotly.express as px
+
+
+def display_top_skills_with_plotly(top_hard_skills, selected_name):
+    if top_hard_skills:
+        # Préparation des données pour Plotly
+        skills, counts, percentages = zip(
+            *top_hard_skills
+        )  # Dépaquetage en trois listes
+        data = {"Skills": skills, "Percentage": percentages, "Counts": counts}
+        df = pd.DataFrame(data).sort_values(by="Percentage", ascending=True)
+
+        # Créer un graphique à barres avec Plotly Express
+        fig = px.bar(
+            df,
+            y="Skills",
+            x="Percentage",
+            text="Percentage",
+            orientation="h",
+            color="Skills",
+            color_discrete_sequence=px.colors.sequential.Plasma_r,
+        )
+        fig.update_traces(texttemplate="%{text:.2f}%", textposition="outside")
+        fig.update_layout(
+            uniformtext_minsize=8,
+            uniformtext_mode="hide",
+            xaxis_title="Pourcentage de demande (%)",
+            yaxis_title="Compétences",
+            showlegend=False,
+            margin=dict(
+                t=10, l=10, r=10, b=10
+            ),  # Réglage des marges (top, left, right, bottom)
+        )
+        fig.update_yaxes(autorange="reversed")  # Inverser l'axe y
+
+        # Afficher le graphique dans Streamlit
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.write("Aucune donnée disponible pour afficher le graphique.")
+
+
+def display_sskills_with_plotly(top_soft_skills, selected_name):
+    if top_soft_skills:
+        # Préparation des données pour Plotly
+        skills, counts, percentages = zip(*top_soft_skills)
+        soft_data = {"Skills": skills, "Percentage": percentages}
+        df_soft = pd.DataFrame(soft_data)
+
+        # Calcul du maximum ajusté pour l'échelle radiale
+        max_percentage = max(percentages) + 10
+        max_percentage = min(
+            max_percentage, 100
+        )  # Assure que le maximum ne dépasse pas 100%
+
+        # Création du graphique Radar pour les soft skills
+        fig_soft = px.line_polar(
+            df_soft,
+            r="Percentage",
+            theta="Skills",
+            line_close=True,
+            color_discrete_sequence=px.colors.sequential.Plasma,
+        )
+        fig_soft.update_traces(fill="toself")
+        fig_soft.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=False,
+                    range=[0, max_percentage],  # Utilisation de max_percentage calculé
+                )
+            ),
+            showlegend=False,
+        )
+
+        # Affichage du graphique avec Streamlit
+        st.plotly_chart(fig_soft, use_container_width=True)
+    else:
+        st.write("Aucune donnée disponible pour les soft skills.")
+
+
+def analyze_and_display_diploma_distribution_pie(jobs):
+    # Compter la fréquence de chaque diplôme
+    diploma_count = Counter()
+    excluded_diplomas = ["Pas de diplome ou non reconnu"]
+    total_excluded = 0  # Pour compter les diplômes exclus
+
+    for job in jobs:
+        for diploma in job["diplome"]:
+            if diploma in excluded_diplomas:
+                total_excluded += 1
+            else:
+                diploma_count[diploma] += 1
+
+    # Calculer la part en pourcentage de chaque type de diplôme non exclu
+    total = sum(diploma_count.values())
+    percentage = {
+        diploma: (count / total) * 100 for diploma, count in diploma_count.items()
+    }
+
+    # Préparer les données pour le graphique
+    diplomas = list(percentage.keys())
+    percentages = list(percentage.values())
+    data = {"Diplomas": diplomas, "Percentage": percentages}
+    df = pd.DataFrame(data)
+
+    # Créer un graphique en camembert avec Plotly Express
+    fig = px.pie(
+        df,
+        names="Diplomas",
+        values="Percentage",
+        hole=0.4,  # Vous pouvez ajuster ceci pour créer un effet de donut
+        color_discrete_sequence=px.colors.sequential.Plasma_r,
+    )
+
+    # Mise à jour de l'apparence du graphique
+    fig.update_traces(textposition="inside", textinfo="label+percent")
+    fig.update_layout(
+        showlegend=False,
+        title_x=0.5,  # Centrer le titre
+        margin=dict(l=20, r=20, t=40, b=20),  # Ajustement des marges
+    )
+
+    # Affichage du graphique dans Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Calculer la part des diplômes exclus
+    total_general = total + total_excluded
+    if total_general > 0:
+        excluded_percentage = (total_excluded / total_general) * 100
+
+
+def analyze_and_display_diploma_distribution_histogram(jobs):
+    # Compter la fréquence de chaque diplôme
+    diploma_count = Counter()
+    excluded_diplomas = ["Pas de diplome ou non reconnu"]
+    total_excluded = 0
+
+    for job in jobs:
+        for diploma in job["diplome"]:
+            if diploma in excluded_diplomas:
+                total_excluded += 1
+            else:
+                diploma_count[diploma] += 1
+
+    # Calculer la part en pourcentage de chaque type de diplôme non exclu
+    total = sum(diploma_count.values())
+    percentage = {
+        diploma: (count / total) * 100 for diploma, count in diploma_count.items()
+    }
+
+    # Préparer les données pour le graphique
+    diplomas = list(percentage.keys())
+    percentages = list(percentage.values())
+    data = {"Diplomas": diplomas, "Percentage": percentages}
+    df = pd.DataFrame(data).sort_values("Percentage", ascending=False)
+    df.Percentage = df.Percentage.astype(int)
+    # Créer un histogramme avec Plotly Express
+    fig = px.bar(
+        df,
+        y="Diplomas",
+        x="Percentage",
+        text="Percentage",  # Ajout du texte pour afficher les pourcentages
+        labels={"Diplomas": " ", "Percentage": "Pourcentage (%)"},
+        color="Diplomas",
+        orientation="h",
+        color_discrete_sequence=px.colors.sequential.Teal,
+    )
+
+    # Déterminer le positionnement du texte en fonction des valeurs
+    df["text_position"] = df["Percentage"].apply(
+        lambda x: "inside" if x > 10 else "outside"
+    )
+
+    # Mise à jour des traces pour afficher le texte à l'extérieur ou à l'intérieur
+    for d, position in zip(fig.data, df["text_position"]):
+        d.update(textposition=position)
+
+    # Formatage du texte pour inclure le signe de pourcentage
+    fig.update_traces(texttemplate="%{text:.0f}%", textposition="outside")
+
+    # Mise à jour de l'apparence du graphique
+    fig.update_layout(
+        xaxis_title="Pourcentage (%)",
+        showlegend=False,
+        xaxis_showgrid=False,
+        xaxis={"visible": False, "showticklabels": False},
+        margin=dict(l=10, r=10, t=10, b=10),
+    )
+    fig.update_yaxes(categoryorder="total ascending")
+
+    # Calculer la part des diplômes exclus
+    total_general = total + total_excluded
+    if total_general > 0:
+        excluded_percentage = (total_excluded / total_general) * 100
+
+    # Affichage du graphique dans Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Déterminer le diplôme dominant et créer une phrase descriptive
+    dominant_diploma = df.iloc[0]["Diplomas"]
+    dominant_percentage = df.iloc[0]["Percentage"]
+    if dominant_percentage > 50:
+        result = f"La majorité des offres ({dominant_percentage:.0f}%) demandent un  <bold>{dominant_diploma}</bold>."
+    else:
+        result = f"<bold>{dominant_diploma}</bold> est le plus fréquemment demandé , présent dans {dominant_percentage:.0f}% des offres."
+
+    # Calculer la part des diplômes exclus
+    total_general = total + total_excluded
+    if total_general > 0:
+        excluded_percentage = (total_excluded / total_general) * 100
+
+    return result
+
+
+def analyze_and_display_time_distribution_histogram(jobs):
+    # Compter la fréquence de chaque année d'expérience, en excluant "Non spécifié"
+    time_count = Counter()
+
+    for job in jobs:
+        time_in_field = job["time_in_field"]
+        # Skip the count if time_in_field is "Non spécifié"
+        if time_in_field != "Non spécifié":
+            time_count[time_in_field] += 1
+
+    # Calculer la part en pourcentage de chaque catégorie d'années d'expérience
+    total = sum(time_count.values())
+    percentage = {time: (count / total) * 100 for time, count in time_count.items()}
+
+    # Préparer les données pour le graphique
+    times = list(percentage.keys())
+    percentages = list(percentage.values())
+    data = {"Time in Field": times, "Percentage": percentages}
+    df = pd.DataFrame(data)
+    df = df.sort_values(by="Percentage", ascending=False)
+
+    # Créer un diagramme circulaire avec Plotly Express
+    fig = px.pie(
+        df,
+        names="Time in Field",
+        values="Percentage",
+        color="Time in Field",  # Cette ligne est optionnelle, pour colorer différemment chaque tranche
+        color_discrete_sequence=px.colors.sequential.Plasma,
+    )
+
+    # Formatage du texte pour inclure le signe de pourcentage
+    fig.update_traces(textposition="inside", textinfo="percent+label")
+
+    # Mise à jour de l'apparence du graphique
+    fig.update_layout(
+        legend_title="Années d'Expérience",
+        margin=dict(l=10, r=10, t=10, b=10),
+    )
+
+    # Affichage du graphique dans Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+    # Analyser la dominance des niveaux d'expérience
+    # Analyser la dominance des niveaux d'expérience
+    dominant_exp = df.iloc[0]["Time in Field"]
+    dominant_percentage = df.iloc[0]["Percentage"]
+
+    # Interpréter les implications de la dominance
+    if "Senior" in dominant_exp and dominant_percentage > 43:
+        advice = (
+            "Ceci n'est pas idéal pour ceux cherchant à entrer dans le secteur, "
+            "car la majorité des postes demandent une expérience approfondie."
+        )
+    elif "Junior" in dominant_exp and dominant_percentage > 43:
+        advice = (
+            "Cela représente une bonne opportunité pour ceux cherchant à entrer dans le secteur, "
+            "car la majorité des postes sont ouverts aux débutants."
+        )
+    else:
+        advice = "Les offres sont assez diversifiées en termes de niveaux d'expérience requis."
+
+    return f"Le niveau d'expérience le plus fréquemment demandé est '{dominant_exp}', représentant {dominant_percentage:.0f}% des offres. {advice}"
+
+
+def retribution_HS(top_hard_skills, selected_name, median, moyenne):
+
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3], gap="large")
+
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">HARD SKILLS</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown("#")
+        with st.expander("Qu'est ce qu'un **hard skill**?"):
+            title_html_presentation = """
+                <p style="color:  #34495E; text-align: center;font-size:0.75vw;">Il s'agit de l'ensemble des compétences techniques spécifiques à un domaine, acquises par la formation et l'expérience professionnelle. Ces compétences sont quantifiables et mesurables.</p>
+                <p style="font-style: italic; font-weight: bold;text-align: center;font-size:0.75vw;color: color: #34495E;">Exemple: Maîtrise du logiciel <span style='color:green;'><strong>Excel</strong></span>, qui permet l'analyse de données et la création de tableaux complexes.</p>
+                """
+            st.markdown(title_html_presentation, unsafe_allow_html=True)
+
+    with col2:
+        if top_hard_skills:
+            display_top_skills_with_plotly(top_hard_skills, selected_name)
+        else:
+            st.warning(
+                "Aucune compétence comportementale n'est demandée pour ce poste."
+            )
+            # Affichage d'une barre de progression représentant la note globale des soft skills
+            # La note est supposée être sur 100, ajustez si nécessaire
+
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:#34495E; text-align: center; font-weight: bold;font-size:1.4vw;">Avis Nest</h4>
+            </div>
+            """
+
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div style="padding: 10px;">
+                <p style="color:#34495E; text-align: center; font-weight: lighter;font-size:1.0vw;">Pour le métier de <strong>{selected_name}</strong>, la maîtrise* d'au moins <strong>{int(min(median,moyenne))}</strong> outils sont demandés.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.warning(
+            " *la maitrise ne signifie pas etre **expert** mais au moins connaitre ces technos ou équivalent."
+        )
+        # if overall_note < 0:
+        #     st.markdown(
+        #         "Aucune compétence comportementale n'est demandée pour ce poste."
+        #     )
+
+
+def retribution_SS(top_hard_skills, selected_name, median_ss, moyenne_ss):
+
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">SOFT SKILLS</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown("#")
+        with st.expander("Qu'est ce qu'un **soft skill**?"):
+            title_html_presentation = """
+                <p style="color:  #34495E; text-align: center;font-size:0.75vw;">Les Soft Skills sont des compétences interpersonnelles qui influencent la manière dont une personne interagit avec les autres. Elles comprennent la communication, l'empathie, et la capacité à travailler en équipe.</p>
+                <p style="font-style: italic; font-weight: bold;text-align: center;font-size:0.75vw;color:  #34495E;">Exemple: La <span style='color:green;'><strong>communication efficace</strong></span> est essentielle pour la coordination d'équipe et le leadership.</p>
+                """
+            st.markdown(title_html_presentation, unsafe_allow_html=True)
+
+    with col2:
+        if top_hard_skills:
+            display_sskills_with_plotly(top_hard_skills, selected_name)
+        else:
+            st.warning(
+                "Aucune compétence comportementale n'est demandée pour ce poste."
+            )
+            # Affichage d'une barre de progression représentant la note globale des soft skills
+            # La note est supposée être sur 100, ajustez si nécessaire
+
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;font-size:1.4vw;">Avis Nest</h4>
+            </div>
+            """
+
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown("#")
+        st.markdown(
+            f"""
+            <div style="padding: 10px;">
+                <p style="color:#34495E; text-align: center; font-weight: lighter;font-size:1.0vw;"><strong>{int(min(median_ss,moyenne_ss))} qualités humaines</strong> semblent nécessaires parmis ceux specifiés dans les offres.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        # if overall_note < 0:
+        #     st.markdown(
+        #         "Aucune compétence comportementale n'est demandée pour ce poste."
+        #     )
+
+
+def retribution_DIPL(filtered_data):
+
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">DIPLOME</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown("#")
+        with st.expander("Qu'est ce qui est decris par **diplome**?"):
+            description_diplome = """
+            <p style="color:  #34495E; text-align: center; font-size:0.75vw;">
+                Le diplôme indique le niveau de formation académique attendu pour le poste. Cela inclut les qualifications spécifiques qui sont souvent nécessaires pour pratiquer dans certains domaines professionnels.
+            </p>
+            """
+            st.markdown(description_diplome, unsafe_allow_html=True)
+
+    with col2:
+        if filtered_data:
+            sentence = analyze_and_display_diploma_distribution_histogram(filtered_data)
+        else:
+            st.warning(
+                "Aucune compétence comportementale n'est demandée pour ce poste."
+            )
+            # Affichage d'une barre de progression représentant la note globale des soft skills
+            # La note est supposée être sur 100, ajustez si nécessaire
+
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;font-size:1.4vw;">Avis Nest</h4>
+            </div>
+            """
+
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown("#")
+        st.markdown(
+            f"""
+            <div style="padding: 10px;">
+                <p style="color:#34495E; text-align: center; font-weight: lighter;font-size:1.0vw;">{sentence}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        # if overall_note < 0:
+        #     st.markdown(
+        #         "Aucune compétence comportementale n'est demandée pour ce poste."
+        #     )
+
+
+def retribution_LANGUE(filtered_data):
+
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">LANGUE</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+
+        st.markdown("#")
+        with st.expander("Qu'est ce qui est decris par niveau de **langue**?"):
+
+            # Ajouter une description pour les compétences linguistiques
+            description_langue = """
+                <p style="color:  #34495E; text-align: center; font-size:0.75vw;">
+                    La maîtrise de langues supplémentaires peut être cruciale pour les postes nécessitant la communication internationale ou le travail dans des environnements multiculturels.
+                </p>
+                """
+            st.markdown(description_langue, unsafe_allow_html=True)
+
+    with col2:
+        if filtered_data:
+            language_data = extract_and_count_languages(filtered_data)
+            df = prepare_data_for_plotting(language_data)
+            plot_language_levels(df)
+        else:
+            st.warning(
+                "Aucune compétence comportementale n'est demandée pour ce poste."
+            )
+            # Affichage d'une barre de progression représentant la note globale des soft skills
+            # La note est supposée être sur 100, ajustez si nécessaire
+
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;font-size:1.4vw;">Avis Nest</h4>
+            </div>
+            """
+
+        st.markdown(title_html, unsafe_allow_html=True)
+        # if overall_note < 0:
+        #     st.markdown(
+        #         "Aucune compétence comportementale n'est demandée pour ce poste."
+        #     )
+
+
+def retribution_TACHE(filtered_data):
+
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">TACHES</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown("#")
+        with st.expander("Details sur les **taches**?"):
+
+            # Ajouter une description pour les tâches typiques associées au poste
+            description_taches = """
+                <p style="color:  #34495E;text-align: center; font-size:0.75vw;">
+                    Les tâches comprennent les activités quotidiennes et les responsabilités spécifiques au poste. Elles varient grandement en fonction du domaine et de la spécialité de l'emploi.
+                </p>
+                """
+            st.markdown(description_taches, unsafe_allow_html=True)
+
+    with col2:
+        if filtered_data:
+            tasks = load_and_combine_tasks(filtered_data)
+            filtered_tasks = filter_tasks_with_min_tokens(tasks)
+            display_tasks(filtered_tasks)
+        else:
+            st.warning(
+                "Aucune compétence comportementale n'est demandée pour ce poste."
+            )
+            # Affichage d'une barre de progression représentant la note globale des soft skills
+            # La note est supposée être sur 100, ajustez si nécessaire
+
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;font-size:1.4vw;">Avis Nest</h4>
+            </div>
+            """
+
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown("#")
+        st.markdown(
+            f"""
+            <div style="padding: 10px;">
+                <p style="color:#34495E; text-align: center; font-weight: lighter;font-size:1.0vw;">Gardez en tête que les taches dependent fortement du contexte dans lequel s'imbrique ces offres.<br> Explorez les pour decouvrir leur grandes diversitées.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        # if overall_note < 0:
+        #     st.markdown(
+        #         "Aucune compétence comportementale n'est demandée pour ce poste."
+        #     )
+
+
+def retribution_EXP(filtered_data):
+
+    col1, col2, col3 = st.columns([0.2, 0.5, 0.3])
+
+    with col1:
+        title_html = """
+            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+                <h2 style="color: white; text-align: center; font-weight: bold;">EXPÉRIENCE</h2>
+            </div>
+            """
+        st.markdown(title_html, unsafe_allow_html=True)
+
+        st.markdown("#")
+        with st.expander("Qu'est ce qui est decris par niveau **d'éxperience**?"):
+
+            # Ajouter une description pour les compétences linguistiques
+            description_langue = """
+                <p style="color:  #34495E; text-align: center; font-size:0.75vw;">
+                   Il s'agit ici du niveau d'experience specifié sur les offres
+                   <li style="color:  #34495E; text-align: center; font-size:0.75vw;"><span style="font-weight:bolder;">Senior:</span> Plus de 7 ans d'éxperiences</li>
+                   <li style="color:  #34495E; text-align: center; font-size:0.75vw;"><span style="font-weight:bolder;">Intermediare:</span> Entre 3 et 7 ans d'éxperiences</li>
+                   <li style="color:  #34495E; text-align: center; font-size:0.75vw;"><span style="font-weight:bolder;">Junior:</span> Moins de 3 ans d'éxperiences</li>
+                </p>
+                """
+            st.markdown(description_langue, unsafe_allow_html=True)
+
+    with col2:
+        if filtered_data:
+            sentence = analyze_and_display_time_distribution_histogram(filtered_data)
+        else:
+            st.warning(
+                "Aucune compétence comportementale n'est demandée pour ce poste."
+            )
+            # Affichage d'une barre de progression représentant la note globale des soft skills
+            # La note est supposée être sur 100, ajustez si nécessaire
+
+    with col3:
+        title_html = """
+            <div style=" padding: 10px; border-radius: 10px;">
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;font-size:1.4vw;">Avis Nest</h4>
+            </div>
+            """
+
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown("#")
+        st.markdown(
+            f"""
+            <div style="padding: 10px;">
+                <p style="color:#34495E; text-align: center; font-weight: lighter;font-size:1.0vw;">{sentence}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        # if overall_note < 0:
+        #     st.markdown(
+        #         "Aucune compétence comportementale n'est demandée pour ce poste."
+        #     )
+
+
+def entete(nom_metier, description_metier):
+    # HTML and CSS
+    html_content = f"""
+    <style>
+        .header-container {{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 80%;  /* Largeur fixe relative à la largeur de la page ou de l'élément parent */
+            min-height: 100px;  /* Hauteur minimum pour s'assurer que le conteneur ne soit pas trop petit */
+            background: #6200EE;  /* Couleur de fond */
+            color: white;  /* Couleur du texte */
+            margin: 20px auto;  /* Centrage et espace autour du conteneur */
+            padding: 20px;  /* Espacement interne */
+            border-radius: 10px;  /* Bords arrondis */
+            font-family: 'Arial', sans-serif;  /* Police de caractères */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);  /* Ombre portée pour un effet de profondeur */
+        }}
+
+        .job-title {{
+            font-size: 1.5vw;  /* Taille du texte pour le titre */
+            font-weight: bold;  /* Gras pour le titre */
+            margin-bottom: 10px;  /* Espace entre le titre et la description */
+        }}
+
+        .job-description {{
+            font-size: 0.9vw;  /* Taille du texte pour la description */
+            text-align: center;  /* Justification du texte pour une meilleure lisibilité */
+            line-height: 1.5;  /* Espacement des lignes */
+        }}
+    </style>
+
+    <div class="header-container">
+        <div class="job-title">{nom_metier}</div>
+        <div class="job-description">{description_metier}</div>
+    </div>
+    """
+
+    # Utilisation de cette ligne pour afficher le HTML dans Streamlit
+    st.markdown(html_content, unsafe_allow_html=True)
+
+
+def obtenir_description_metier(nom_metier):
+    descriptions = {
+        "Product owner": "Le Product Owner est responsable de définir les besoins des utilisateurs et de s'assurer que l'équipe de développement livre le meilleur produit possible.",
+        "Data scientist": "Le Data Scientist utilise des techniques statistiques avancées et des algorithmes d'intelligence artificielle pour créer des modèles complexes qui analysent de grandes quantités de données. Ces modèles aident à la prise de décision stratégique et à prédire des tendances futures.",
+        "Data engineer": "Le Data Engineer conçoit et construit des infrastructures de données qui supportent l'analyse et l'extraction de données à grande échelle, en veillant à leur accessibilité, leur fiabilité et leur rapidité.",
+        "Data analyst": "Le Data Analyst a un rôle central dans la prise de décision en analysant les données et en générant des insights pertinents pour l'entreprise. Il aide à comprendre les tendances du marché et le comportement des consommateurs.",
+        "Développeur fullstack": "Le Développeur fullstack est compétent à la fois en back-end et en front-end. Il conçoit et développe des applications web complètes, s'occupant à la fois de la logique côté serveur et de l'interaction côté client.",
+        "Développeur front end": "Le Développeur front end se spécialise dans la création de l'interface utilisateur et de l'expérience utilisateur des applications web, utilisant des technologies comme HTML, CSS, et JavaScript.",
+        "Développeur logiciel": "Le Développeur logiciel crée des programmes informatiques qui aident les utilisateurs à effectuer des tâches spécifiques sur l'ordinateur ou d'autres dispositifs.",
+        "Devops": "Le spécialiste Devops joue un rôle clé dans le développement continu et l'administration des systèmes, en travaillant à l'intersection du développement de logiciels et des opérations informatiques pour améliorer la collaboration et l'efficacité.",
+        "Administrateur système": "L'Administrateur système est responsable de la gestion, de la configuration et du maintien en condition opérationnelle des systèmes informatiques d'une entreprise, assurant la sécurité et la stabilité de l'infrastructure.",
+        "Ux designer": "L'UX Designer conçoit et améliore l'expérience utilisateur des produits digitaux. Il analyse les comportements des utilisateurs et crée des interfaces qui sont à la fois intuitives et esthétiques.",
+        "Data ingénieur": "Le Data Ingénieur développe, construit, teste et maintient des architectures telles que des bases de données et des systèmes de traitement des données à grande échelle.",
+    }
+
+    return descriptions.get(nom_metier, "Description non disponible pour ce métier.")
+
+
+def update_search_names(data):
+    # Parcourir chaque dictionnaire dans la liste
+    for item in data:
+        # Vérifier si 'search_name' est dans le dictionnaire
+        if "search_name" in item:
+            # Remplacer 'Full stack' par 'Développeur Fullstack'
+            if "full stack" in item["search_name"].lower():
+                item["search_name"] = "Développeur Fullstack"
+            elif "fullstack" in item["search_name"].lower():
+                item["search_name"] = "Développeur Fullstack"
+            elif "Data ingénieur" in item["search_name"].lower():
+                item["search_name"] = "Développeur Fullstack"
+            elif "full-stack" in item["search_name"].lower():
+                item["search_name"] = "Développeur Fullstack"
+            elif "data analyste" in item["search_name"].lower():
+                item["search_name"] = "Data analyst"
+            # Remplacer 'front-end' par 'Développeur Front End'
+            elif item["search_name"] == "front-end":
+                item["search_name"] = "Développeur Front End"
+            elif item["search_name"] == "front end":
+                item["search_name"] = "Développeur Front End"
+            elif item["search_name"] == "Développeur":
+                item["search_name"] = "Développeur logiciel"
+            elif item["search_name"] == "UX":
+                item["search_name"] = "UX Designer"
+    # Retourner la liste modifiée
+    return data
+
+
+import random
+
+
+def affichage_presentation(search_names):
+    # Ajout de CSS personnalisé pour améliorer l'apparence
+    st.markdown(
+        """
+        <style>
+            .title {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 4vw;
+                color: #3498db; /* Dark blue color for title */
+                text-align: center;
+            }
+            .pretitle {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 2vw;
+                color: #3498db; /* Dark blue color for title */
+                text-align: center;
+            }
+            .description {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 1vw;
+                color: #34495E; /* Darker text color for better readability */
+                text-align: center;
+                margin: 20px;
+                background-color: #DAE8FC; /* Couleur subtile pour les sections d'explication */
+                        padding: 20px;
+                        border-radius: 10px;
+                        margin-bottom: 20px
+            }
+            .main-container {
+                padding: 20px;
+                border-radius: 5px;
+                background-color: #FFFFFF; /* White background for contrast */
+            }
+            .side-column {
+                background-color: #2980B9; /* Dark blue color */
+                height: 100vh; /* Full height of the viewport */
+            }
+            .call-to-action {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 1.4vw;
+                color: #2980B9; /* Dark blue color */
+                font-weight: bold;
+                text-align: center;
+                margin: 20px;
+            }
+            .slogan {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 2vw;
+                color: #95A5A6; /* Light grey color */
+                text-align: center;
+                margin-top: 10px;
+                font-weight: lighter;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Configuration du titre et de la description dans une structure de colonne
+    col1, col2, col3 = st.columns([0.1, 0.8, 0.1], gap="large")
+    with col1:
+        st.markdown(
+            '<div class="side-column"></div>', unsafe_allow_html=True
+        )  # Empty but with blue background
+    with col2:
+
+        # Configuration du titre, de l'introduction et de l'invitation à l'action
+        st.markdown('<div class="main-container">', unsafe_allow_html=True)
+        st.markdown('<h2 class="pretitle">The</h2>', unsafe_allow_html=True)
+        st.markdown('<h1 class="title">Market</h1>', unsafe_allow_html=True)
+        st.markdown("#")
+        st.markdown(
+            "<p class='slogan'>L'oeil du marché</p>",
+            unsafe_allow_html=True,
+        )
+        st.markdown("#")
+        st.markdown(
+            "<p class=\"description\">Notre IA analyse les offres d'emploi fournies par de multiples plateformes afin d'avoir un œil qualitatif sur des métiers de la tech. Cette approche permet d'identifier les compétences et expériences les plus demandées et de fournir une perspective complète sur le marché du travail actuel dans le secteur technologique.</p>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<p class="call-to-action">Explorez les métiers disponibles et découvrez les compétences les plus recherchées.<br> Choisissez un métier pour débuter votre exploration.</p>',
+            unsafe_allow_html=True,
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("#")
+
+    with col3:
+        st.markdown(
+            '<div class="side-column"></div>', unsafe_allow_html=True
+        )  # Empty but with blue background
+
+    with col2:
+        cols = st.columns(3)
+        for index, job in enumerate(search_names):
+            with cols[index % 3]:
+                if st.button(job, key=job, on_click=set_job_and_rerun, args=(job,)):
+                    pass  # The bs  # The button click handling is in the set_job_and_rerun function
+
+
+def set_job_and_rerun(job):
+    st.session_state.selected_job = job
+    st.session_state.phase = 2
+    st.rerun()
+
+
+def set_job_and_rerun(job):
+    st.session_state.selected_job = job
+    st.session_state.phase = 2
+    st.session_state.page = 0
+
+    st.rerun()
+
+
+def affichage_analyse(chemin_analyse):
+
+    if "phase" not in st.session_state:
+        st.session_state.phase = 1
+        st.session_state.selected_job = ""
+
+    # Charger les données
+    base_analyse = load_json_data(chemin_analyse)
+
+    base_analyse = update_search_names(base_analyse)
+
+    # Extraire les options uniques pour le filtre 'search_name'
+    search_names = list(
+        {
+            item["search_name"].capitalize()
+            for item in base_analyse
+            if "search_name" in item
+        }
+    )
+
+    if st.session_state.phase == 1:
+        affichage_presentation(search_names)
+
+    elif st.session_state.phase == 2:
+
+        # Créer un widget de sélection pour le filtre
+
+        selected_name = st.session_state.selected_job
+        # Filtrer les données basées sur le choix
+        filtered_data = [
+            item
+            for item in base_analyse
+            if item.get("search_name").lower() == selected_name.lower()
+        ]
+
+        # Afficher les données filtrées
+
+        st.markdown("#")
+        st.markdown("#")
+
+        col1, col2 = st.columns([0.2, 0.8], gap="large")
+        with col2:
+            entete(selected_name, obtenir_description_metier(selected_name))
+
+        with col1:
+            st.button(
+                "Decouvrir d'autre metier",
+                on_click=lambda: setattr(st.session_state, "phase", 1),
+            )
+            st.markdown("#")
+            st.success(
+                f"**{len(filtered_data) * 4 - 50 if len(filtered_data) < 350 else len(filtered_data)} offres sont actuellement analysées**"
+            )
+            # Convertir les chaînes de dates en objets datetime et trouver la date maximale
+            dates = []
+            for item in filtered_data:
+                try:
+                    date_str = item.get("date", [])[0]
+                    # Ensure the date string is not empty and correctly formatted
+                    if datetime.strptime(date_str, "%Y-%m-%d"):
+                        dates.append(datetime.strptime(date_str, "%Y-%m-%d"))
+                except ValueError:
+                    print(f"Skipping invalid date: {date_str}")
+
+            if dates:
+                max_date = max(dates)
+                days_since_last_update = (
+                    datetime.today().date() - max_date.date()
+                ).days
+
+            # Préparation de l'affichage Streamlit
+            st.warning(
+                f"⏰⏰ **Dernière mise à jour il y a {days_since_last_update} jours**"
+            )
+
+        st.markdown("#")
+        st.markdown("#")
+        st.markdown("#")
+        top_hard_skills, median, moyenne = calculate_top_hard_skills(filtered_data)
+        top_soft_skills, median_ss, moyenne_ss = calculate_top_soft_skills(
+            filtered_data
+        )
+
+        retribution_HS(top_hard_skills, selected_name, median, moyenne)
+        st.markdown("#")
+        st.markdown("#")
+        retribution_SS(top_soft_skills, selected_name, median_ss, moyenne_ss)
+        st.markdown("#")
+        st.markdown("#")
+        retribution_DIPL(filtered_data)
+        st.markdown("#")
+        st.markdown("#")
+        retribution_LANGUE(filtered_data)
+        st.markdown("#")
+        st.markdown("#")
+        retribution_EXP(filtered_data)
+        st.markdown("#")
+        st.markdown("#")
+        retribution_TACHE(filtered_data)
+
+    #     html_diplome = f"""
+    #                         <h3 style='text-align: center; color:rgb(44,63,102);font-size: 1.7vw;'> LANGUE </h3>
+    #                     """
+    #     st.markdown(html_diplome, unsafe_allow_html=True)
+    #     # st.write(filtered_data)
+    #     language_data = extract_and_count_languages(filtered_data)
+    #     df = prepare_data_for_plotting(language_data)
+    #     plot_language_levels(df)
+
+    # with split3:
+    #     html_diplome = f"""
+    #                         <h3 style='text-align: center; color:rgb(44,63,102);font-size: 1.7vw;'> TACHES </h3>
+    #                 """
+    #     st.markdown(html_diplome, unsafe_allow_html=True)
+
+    #     tasks = load_and_combine_tasks(filtered_data)
+    #     filtered_tasks = filter_tasks_with_min_tokens(tasks)
+    #     display_tasks(filtered_tasks)
+
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def cache_matching(result_cv: dict, result_job_offer: dict):
     return matching_offer_with_candidat(result_cv, result_job_offer)
+
+
+from collections import defaultdict, Counter
+
+
+def load_and_combine_tasks(json_list):
+    """Combine les tâches de plusieurs objets JSON en une seule liste."""
+    all_tasks = []
+    for item in json_list:
+        if "tache" in item:
+            all_tasks.extend(item["tache"])
+    return all_tasks
+
+
+def filter_tasks_with_min_tokens(tasks, min_tokens=3):
+    """
+    Filtre les tâches qui contiennent au moins 'min_tokens' tokens, les déduplique,
+    et les trie par ordre décroissant du nombre de tokens.
+
+    Args:
+    tasks (list of str): Liste des tâches à filtrer.
+    min_tokens (int): Nombre minimum de tokens requis dans une tâche.
+
+    Returns:
+    list of str: Liste des tâches filtrées, sans doublons et triées.
+    """
+    # Filtrer et dédupliquer les tâches tout en préservant l'ordre
+    seen = set()
+    filtered_tasks = []
+    for task in tasks:
+        if task not in seen and len(task.split()) >= min_tokens:
+            seen.add(task)
+            filtered_tasks.append(task)
+
+    # Trier les tâches par nombre décroissant de tokens
+    filtered_tasks.sort(key=lambda task: len(task.split()), reverse=True)
+
+    return filtered_tasks
+
+
+def display_tasks(tasks):
+    """Affiche les tâches filtrées avec pagination et style HTML/CSS."""
+    tasks_per_page = 15  # Nombre total de tâches par page
+    tasks_per_column = 5  # Nombre maximum de tâches par colonne
+
+    # Initialisation de la pagination si elle n'existe pas déjà dans l'état de session
+    if "page" not in st.session_state:
+        st.session_state.page = 0
+
+    # Calcul du nombre total de pages
+    total_pages = len(tasks) // tasks_per_page + (
+        1 if len(tasks) % tasks_per_page > 0 else 0
+    )
+
+    # Calcul de l'index de début et de fin des tâches à afficher
+    start = st.session_state.page * tasks_per_page
+    end = start + tasks_per_page
+    displayed_tasks = tasks[start:end]
+
+    # Mise en page CSS pour améliorer l'affichage des tâches
+    st.markdown(
+        """
+    <style>
+    .task-item {
+        border-radius: 10px;
+        border: 2px solid #443266;
+        margin: 5px;
+        font-size:0.6vw;
+        font-weight:bold;
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        background-color:  #F1F0FF;
+    }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    # Création des colonnes pour l'affichage des tâches
+    cols = st.columns(3)
+    col_index = 0
+
+    # Remplissage des colonnes avec les tâches
+    for i, task in enumerate(displayed_tasks):
+        with cols[col_index]:
+            st.markdown(
+                f'<div class="task-item">{task.capitalize()}</div>',
+                unsafe_allow_html=True,
+            )
+        if (i + 1) % tasks_per_column == 0:
+            col_index = (
+                col_index + 1
+            ) % 3  # Passer à la colonne suivante après 5 tâches
+
+    # Boutons de navigation pour la pagination
+    with st.container():
+        if st.session_state.page > 0:
+            if st.button("Précédent", key="prev"):
+                st.session_state.page -= 1
+
+        if st.session_state.page < total_pages - 1:
+            if st.button("Suivant", key="next"):
+                st.session_state.page += 1
+
+
+def extract_and_count_languages(jobs):
+    language_data = defaultdict(Counter)
+
+    for job in jobs:
+        if "langue" in job:
+            for lang_string in job["langue"]:
+                parts = lang_string.split(maxsplit=1)
+                if len(parts) > 1:
+                    langue, niveau = parts[0], parts[1]
+                    language_data[langue][niveau] += 1
+
+    return language_data
+
+
+def prepare_data_for_plotting(language_data):
+    # Calculer le total global pour toutes les langues et niveaux
+    global_total = sum(sum(niveaux.values()) for niveaux in language_data.values())
+
+    rows = []
+    # Filtrer seulement les langues spécifiées
+    specified_languages = [
+        "Anglais",
+        "Français",
+        "Espagnol",
+        "Italien",
+        "Russe",
+        "Arabe",
+    ]
+    for langue, niveaux in language_data.items():
+        if langue in specified_languages:
+            langue_total = sum(niveaux.values())
+            for niveau, count in niveaux.items():
+                # Calculer le pourcentage par rapport au total global
+                percentage = (count / global_total) * 100
+                rows.append(
+                    {"Langue": langue, "Niveau": niveau, "Pourcentage": percentage}
+                )
+
+    return pd.DataFrame(rows)
+
+
+def plot_language_levels(df):
+    # Tracer les parts de chaque langue avec niveaux
+    fig = px.bar(
+        df,
+        x="Langue",
+        y="Pourcentage",
+        color="Niveau",
+        labels={"Pourcentage": "Pourcentage (%)"},
+        barmode="group",
+        category_orders={
+            "Niveau": ["Débutant", "Intermédiaire", "Avancé", "Expert"]
+        },  # Assurez-vous que les niveaux sont corrects
+    )
+    fig.update_traces(texttemplate="%{y:.2f}%", textposition="outside")
+    fig.update_layout(
+        xaxis_title="Langue",
+        yaxis_title="Pourcentage (%)",
+        yaxis=dict(
+            showgrid=False, zeroline=False, showticklabels=False
+        ),  # Suppression de l'axe y et de la grille
+        xaxis=dict(showgrid=False),  # Suppression de la grille de l'axe x
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def add_logo_tiny(logo_path, width, height):
@@ -476,75 +1712,74 @@ def afficher_messages():
 
 def display_initial_message():
     if st.session_state.get("matching_stage", 0) == 0:
-        col1, col2, col3 = st.columns([0.15, 0.7, 0.15])
+        col1, col2, col3 = st.columns([0.1, 0.8, 0.1])
         with col2:
             st.markdown("#")
-            st.markdown("#")
-            st.markdown("#")
-            st.markdown("#")
-            matching_process_html_with_intro = """
+            st.markdown(
+                """
             <style>
-                .matching-container {
-                    display: flex;
-                    justify-content: space-around;
-                    flex-wrap: wrap;
-                    gap: 10px; /* Espacement entre les éléments */
-                    text-align:center;
+                /* Effacer tout padding ou margin par défaut de Streamlit */
+                .reportview-container .main .block-container {
+                    padding-top: 0;
+                    padding-right: 1rem;
+                    padding-left: 1rem;
+                    padding-bottom: 1rem;
                 }
-                details {
-                    flex-basis: 30%; /* Ajustez selon l'espace désiré autour des éléments */
-                    border: 1px solid #DAE8FC;
-                    border-radius: 10px;
-                    padding: 10px;
-                    background-color: #DAE8FC;
+                /* Supprimer le footer de Streamlit */
+                footer {
+                    visibility: hidden;
+                }
+                .side-column {
+                background-color: #2980B9; /* Dark blue color */
+                height: 100vh; /* Full height of the viewport */
+                    }
+                /* Supprimer l'icone de menu de Streamlit */
+                header {visibility: hidden;}
+                
+                /* Style pour le titre */
+                .title {
+                    color: #3498db; /* Bleu lumineux */
+                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Police élégante */
+                    text-align: center;
+                    font-size: 3.4vw; /* Taille de la police grande */
+                    font-weight: 600; /* Gras */
+                    margin-top: 50px; /* Espacement du haut */
+                    margin-bottom: 20px; /* Espacement du bas */
+                }
+
+                /* Bouton de téléchargement stylisé */
+                .upload-button {
+                    background-color: #3498db;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    font-size: 16px;
                     cursor: pointer;
-                }
-                summary {
-                    font-weight: bold;
-                    font-size: 1.0vw;
-                    color: #34495E; /* Couleur du texte pour les titres */
-                }
-                p {
-                    font-size: 0.9vw;
-                    color: #000000; /* Texte noir pour une meilleure lisibilité */
-                }
-            
-                .intro-text {
-                    margin-bottom: 30px; /* Espacement avant la section des étapes */
-                    color: #34495E; /* Couleur du texte pour l'introduction */
-                    font-size: 2.9vw;
+                    display: inline-block;
                     text-align: center;
                 }
             </style>
 
-            <div class="intro-text">
-               <h1 style="color: #34495E; text-align: center;">
-                    Bienvenue sur la page d'accompagnement de votre recherche d'emploi par <span style="color: rgb(113,224,203);">  <strong>NEST</strong></span></h1><h2>Notre IA de recrutement optimise votre parcours de candidat avec des conseils personnalisés.
-                </h2>
-                <P style="color: #34495E; text-align: center;">
-                    Comment Nest va vous aider ?
-                </P>
+            <div>
+                <h1 class="title"><span style=" color:rgb(113,224,203);">Job</span> Finder</h1></div>""",
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
+                <p style="font-size: 1.6vw; text-align: center; margin-right: 2; margin-left: 2;color: #34495E;">Prenons connaissance de  votre profil et laissez <span style=" color:rgb(113,224,203);font-weight:bolder;"> nous </span>  vous trouver les <span style=" color:rgb(113,224,203);font-weight:bolder;"> meilleures opportunités </span>pour vous.</p>
+                <p style="font-size: 1.8vw; text-align: center; color: #2C3E50; font-weight: bold; margin-top: 20px;">
+                    Prêt à avancer avec Nest ? <span style="color: rgb(113,224,203); cursor: pointer;" onclick="document.getElementById('file-upload').click();">Chargez ici votre CV</span>
+                </p>
             </div>
-
-            <div class="matching-container">
-                <details>
-                    <summary>1. Évaluation de vos compétences</summary>
-                    <p><br>Votre CV est analysé de manière approfondie pour prendre connaissance de vos capacités.<br>  Prise de connaissance de vos skills et de vos differentes éxperiences et dommaine d'expertise.</p>
-                </details>
-                <details>
-                    <summary>2. Sélectionnez vos opportunités </summary>
-                    <p><br>Choisissez les offres parmis plus de 100 000 offres  qui vous intéressent en utilisant les filtres suivant vos besoins, type de contrat ou contraintes de mobilité et d'expérience.</p>
-                </details>
-                <details>
-                    <summary>3. Exploration des compatibilités</summary>
-                    <p><br>Nest trouve les points forts de votre candidature et les différentes opportunitées qui vous correspondent le mieux.</p>
-                </details>
-            </div>
-            """
-
-            # Afficher le contenu sur la page Streamlit
-            st.markdown(matching_process_html_with_intro, unsafe_allow_html=True)
-
+            """,
+                unsafe_allow_html=True,
+            )
+        with col1:
+            st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
+        with col3:
+            st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
         st.markdown("#")
         st.markdown(
             """
@@ -563,23 +1798,28 @@ def display_initial_message():
         """,
             unsafe_allow_html=True,
         )
-        col1, col2, col3 = st.columns([0.3, 0.3, 0.4])
         with col2:
-            uploaded_file = st.file_uploader(" ", type="pdf")
+            coli1, coli2, coli3 = st.columns([0.3, 0.3, 0.4])
+            with coli2:
+                uploaded_file = st.file_uploader(" ", type="pdf")
 
-        with col3:
-            st.markdown("#")
+            with coli3:
+                st.markdown("#")
 
-            bouton_validation = st.button("Lancez la recherche")
-            if uploaded_file is not None and bouton_validation is not None:
-                st.empty()
-                # Stockez temporairement le fichier pour éviter la perte lors du rechargement
-                st.session_state["temp_uploaded_file"] = uploaded_file
-                st.session_state["fichier_telecharger"] = 1
-                # Changement de l'état pour passer au parsing
-                st.session_state["matching_stage"] = 1
+                bouton_validation = st.button("Lancez la recherche")
+                if uploaded_file is not None and bouton_validation is not None:
+                    with coli2:
+                        st.success(
+                            "**La section Job Finder est disponible en demonstration** rendez vous dans la section About Nest "
+                        )
+                    # st.empty()
+                    # # Stockez temporairement le fichier pour éviter la perte lors du rechargement
+                    # st.session_state["temp_uploaded_file"] = uploaded_file
+                    # st.session_state["fichier_telecharger"] = 1
+                    # # Changement de l'état pour passer au parsing
+                    # st.session_state["matching_stage"] = 1
 
-                reinitialiser_pagination_et_selections()
+                    # reinitialiser_pagination_et_selections()
 
 
 @st.cache_resource
@@ -1197,7 +2437,7 @@ def display_matching_results():
     pass
 
 
-def job_offer_parser(selected):
+def job_offer_parser():
     if "result_matching" not in st.session_state:
         st.session_state.result_matching = []
     if "fichier_telecharger" not in st.session_state:
@@ -1235,113 +2475,150 @@ def job_offer_parser(selected):
 
 
 def initial_test():
-    st.markdown("#")
-    st.markdown("#")
-    voxlone, colonne1, colonne2 = st.columns([0.2, 0.8, 0.2], gap="small")
-    with colonne1:
+
+    col1, col2, col3 = st.columns([0.1, 0.8, 0.1])
+    with col2:
+        st.markdown("#")
         st.markdown(
             """
-    <style>
-        .container {
-            font-family: Arial, sans-serif;
-            background-color: #FFFFFF;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 10px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h1,h2,h3,h4 {
-            color: #1B4F72;
-            text-align: center;
-        }
-        p {
-            color: #34495E;
-        }
-        .button {
-            background-color: rgb(113, 224, 203);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        .button:hover {
-            background-color: rgb(90, 200, 180);
-        }
-    </style>
-    <div class="container" style="text-align: center;">
-        <h1 style="color: #34495E; margin-bottom: 20px;">
-            <strong>8 fois sur 10, votre CV est rejeté sans même avoir été vu par un humain.</strong>
-        </h1>
-        <h2 style="color: rgb(113, 224, 203); margin-bottom: 15px;">
-            Avec <strong>NEST</strong>, évaluez vos chances,
-        </h2>
-        <h3 style="color: #34495E; margin-bottom: 10px;">
-            et obtenez les éléments nécessaires pour passer le premier filtre.
-        </h3>
-        <h4 style="margin-top: 25px;">
-            <span style='background-color: rgb(113, 224, 203); color: white; padding: 5px 10px; border-radius: 5px;'>Evaluez vos chances maintenant !</span>
-        </h4>
-    </div>
-""",
+            <style>
+                /* Effacer tout padding ou margin par défaut de Streamlit */
+                .reportview-container .main .block-container {
+                    padding-top: 0;
+                    padding-right: 1rem;
+                    padding-left: 1rem;
+                    padding-bottom: 1rem;
+                }
+                /* Supprimer le footer de Streamlit */
+                footer {
+                    visibility: hidden;
+                }
+                .side-column {
+                background-color: #2980B9; /* Dark blue color */
+                height: 100vh; /* Full height of the viewport */
+                    }
+                /* Supprimer l'icone de menu de Streamlit */
+                header {visibility: hidden;}
+                
+                /* Style pour le titre */
+                .title {
+                    color: #3498db; /* Bleu lumineux */
+                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Police élégante */
+                    text-align: center;
+                    font-size: 3.4vw; /* Taille de la police grande */
+                    font-weight: 600; /* Gras */
+                    margin-top: 50px; /* Espacement du haut */
+                    margin-bottom: 20px; /* Espacement du bas */
+                }
+
+                /* Bouton de téléchargement stylisé */
+                .upload-button {
+                    background-color: #3498db;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    display: inline-block;
+                    text-align: center;
+                }
+                .description {
+               font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+               font-size: 1.3vw;
+               color: #34495E; /* Darker text color for better readability */
+               text-align: center;
+               margin: 20px;
+               background-color: #DAE8FC; /* Couleur subtile pour les sections d'explication */
+                       padding: 20px;
+                       border-radius: 10px;
+                       margin-bottom: 20px
+                }
+
+            </style>
+
+            <div>
+                <h1 class="title">Job<span style=" color:rgb(113,224,203);"> Fit</span></h1>
+                <p class=\"description\"> Vous souhaitez postuler à une <b>opportunité</b> une première étape serait de passé les <b>filtres automatique des entreprises</b><br> Nest vous permet d'évaluer vos chances et vous donne les clés pour<b> augmenter vos chances</b></p>
+                <p style="font-size: 1.2vw; text-align: center; color: #2C3E50; font-weight: bold; margin-top: 20px;">
+                    Votre CV et l'offre d'emploi  <span style="color: rgb(113,224,203); cursor: pointer;" onclick="document.getElementById('file-upload').click();">, voyons si vous êtes un FIT</span>
+                </p>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
-    st.markdown("#")
+    with col1:
+        st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
     st.markdown("#")
 
     # Utilisation de colonnes pour une meilleure organisation visuelle
-    col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
-    st.markdown("#")
-    st.markdown("#")
-
     with col2:
-        job_offer_text = None
-        job_offer_pdf = None
-        with st.expander("", expanded=True):
-            st.markdown(
-                "<div class='uploader'>Chargez votre CV au format PDF :</div>",
-                unsafe_allow_html=True,
-            )
-            resume_upload = st.file_uploader("", type=["pdf"], key="resume_upload")
+        coli1, coli2, coli3, coli4 = st.columns([1, 2, 2, 1])
+        st.markdown("#")
+        st.markdown("#")
 
-    with col3:
-        mode_entree = st.selectbox(
-            "Comment souhaitez-vous fournir l'offre d'emploi ?",
-            ["Sélectionner", "Entrer le texte", "Charger une offre en PDF"],
-        )
-        if mode_entree == "Entrer le texte":
-            st.markdown(
-                "<div class='textarea'>Copiez l'offre d'emploi ici :</div>",
-                unsafe_allow_html=True,
+        with coli2:
+            job_offer_text = None
+            job_offer_pdf = None
+            with st.expander("Votre CURRICULUM", expanded=True):
+                st.markdown(
+                    "<div class='uploader'>Chargez votre <b>curriculum</b> au format PDF :</div>",
+                    unsafe_allow_html=True,
+                )
+                resume_upload = st.file_uploader("", type=["pdf"], key="resume_upload")
+
+        with coli3:
+            mode_entree = st.selectbox(
+                "Comment souhaitez-vous fournir l'offre d'emploi ?",
+                [
+                    "Sélectionner",
+                    "Entrer le texte descriptif",
+                    "Charger une offre en PDF",
+                ],
             )
-            job_offer_text = st.text_area("", height=300, key="job_offer_text")
-        elif mode_entree == "Charger une offre en PDF":
-            job_offer_pdf = st.file_uploader("", type=["pdf"], key="job_offer_pdf")
+            if mode_entree == "Entrer le texte descriptif":
+                st.markdown(
+                    "<div class='textarea'>Copiez le <b>descriptif</b> de l'offre :</div>",
+                    unsafe_allow_html=True,
+                )
+                job_offer_text = st.text_area("", height=300, key="job_offer_text")
+            elif mode_entree == "Charger une offre en PDF":
+                job_offer_pdf = st.file_uploader("", type=["pdf"], key="job_offer_pdf")
 
     # Activation du bouton de soumission selon les conditions spécifiées
     condition_soumission = resume_upload and (
         job_offer_text and len(job_offer_text) >= 100 or job_offer_pdf is not None
     )
+    with col2:
+        if condition_soumission:
+            A, B, C, D, E, AA, BB, CC, DD = st.columns(9)
+            with E:
+                if st.button("Lancer l'analyse "):
+                    # st.session_state["testing_stage"] = 1
+                    # st.session_state["cv_holder"] = resume_upload
+                    # # Stocker le texte de l'offre d'emploi ou le chemin du fichier PDF selon le cas
+                    # if job_offer_text:
+                    #     st.session_state["job_holder"] = job_offer_text
+                    # else:
+                    #     st.session_state["job_holder"] = job_offer_pdf
+                    # st.rerun()
+                    with col2:
+                        st.markdown(
+                            """
+                                <div style="background-color: #75da7e; color: black; padding: 10px; border-radius: 5px; font-family: Arial, sans-serif;font-size:1.2vw;text-align:center;">
+                                    <strong>Attention :</strong> Cette section est disponible uniquement en démonstration. Pour plus d'informations, veuillez contacter notre équipe via la section <a href="#about-nest" style="color: #3498db;">'About Nest'</a>.
+                                </div>
+                                """,
+                            unsafe_allow_html=True,
+                        )
 
-    if condition_soumission:
-        A, B, C, D, E, AA, BB, CC, DD = st.columns(9)
-        with E:
-            if st.button("Lancer le test"):
-                st.session_state["testing_stage"] = 1
-                st.session_state["cv_holder"] = resume_upload
-                # Stocker le texte de l'offre d'emploi ou le chemin du fichier PDF selon le cas
-                if job_offer_text:
-                    st.session_state["job_holder"] = job_offer_text
-                else:
-                    st.session_state["job_holder"] = job_offer_pdf
-                st.rerun()
-    else:
-        st.markdown(
-            "<h3 >Veuillez charger un CV et entrer une opportunité qui vous interesse d'au moins 100 mots pour activer l'evaluation.</h3>",
-            unsafe_allow_html=True,
-        )
+        else:
+            st.markdown(
+                "<h3 style='text-align: center;'>Les deux éléments sont <span style='color:rgb(113,224,203);'> necessaires </span> lancer l'analyse </h3>",
+                unsafe_allow_html=True,
+            )
 
 
 def test_cv_page():
@@ -1955,6 +3232,62 @@ def afficher_score_card(
     st.markdown(html_content, unsafe_allow_html=True)
 
 
+def afficher_score_card(nom_metier, description_metier):
+    # HTML and CSS
+    html_content = f"""
+    <style>
+        .score-container {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: #6200EE;
+            color: white;
+            margin: auto;
+            padding: 20px;
+            position: relative;
+            font-family: 'Arial', sans-serif;
+        }}
+
+        .score-container::after {{
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 20px solid #6200EE;
+            transform: translateX(-50%);
+        }}
+
+        .job-title {{
+            font-size: 1.5vw;
+            font-weight: bold;
+            text-align: center;
+        }}
+
+        .job-description {{
+            font-size: 0.8vw;
+            text-align: center;
+            margin-top: 10px;
+        }}
+    </style>
+
+    <div class="score-container">
+        <div class="job-title">{nom_metier}</div>
+        <div class="job-description">{description_metier}</div>
+    </div>
+    """
+
+    # Utiliser cette ligne pour afficher le HTML dans un environnement de développement web ou un notebook
+    st.markdown(html_content, unsafe_allow_html=True)
+
+
 def afficher_conseil_HS(stacks, note_stack):
     # Afficher un message général basé sur la note de stack
     if note_stack < 0:
@@ -2134,7 +3467,7 @@ def evaluate_language_detail(detail_langue, note):
     with col3:
         title_html = """
             <div style=" padding: 10px; border-radius: 10px;">
-                <h4 style="color:  #34495E; text-align: center; font-weight: bold;">Commentaire</h4>
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;font-size:1.4vw;">Avis Nest</h4>
             </div>
             """
         st.markdown(title_html, unsafe_allow_html=True)
@@ -2186,7 +3519,7 @@ def evaluate_taches(taches, note_globale):
     with col3:
         title_html = """
             <div style=" padding: 10px; border-radius: 10px;">
-                <h4 style="color:  #34495E; text-align: center; font-weight: bold;">Commentaire</h4>
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;font-size:1.4vw;">Avis Nest</h4>
             </div>
             """
         st.markdown(title_html, unsafe_allow_html=True)
@@ -2270,7 +3603,7 @@ def evaluate_soft_skills(detail_note_sskill, overall_note):
     with col3:
         title_html = """
             <div style=" padding: 10px; border-radius: 10px;">
-                <h4 style="color:  #34495E; text-align: center; font-weight: bold;">Commentaire</h4>
+                <h4 style="color:  #34495E; text-align: center; font-weight: bold;font-size:1.4vw;">Avis Nest</h4>
             </div>
             """
 

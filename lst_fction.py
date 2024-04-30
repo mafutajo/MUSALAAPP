@@ -9,6 +9,7 @@ import io
 import random
 import streamlit.components.v1 as components
 import base64
+import matplotlib.pyplot as plt
 import json
 
 import hashlib
@@ -1262,7 +1263,7 @@ def parsing_joboffer(
     ]
 
     window_size = 50
-    overlap = 25
+    overlap = 49
     base = sliding_window2(listed_text_cv, window_size, overlap)
 
     print(base)
@@ -3232,7 +3233,7 @@ def match_visualisation(sortie):
             st.session_state["indices_selectionnes"] = []
             st.session_state.result_matching = {}
             offres_emploi = st.session_state["offres_emploi"]
-            selected = "NEST IA"
+            selected = "Job Finder"
             del st.session_state.parsed_offres
             del st.session_state.region_selectionnee
 
