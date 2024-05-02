@@ -9,7 +9,6 @@ st.set_page_config(
     page_title="NEST",
     layout="wide",
     page_icon="nest_logo-transformed.png",
-    theme={"base": "light"},
 )
 from header import header, accueil
 from matching import job_offer_parser, test_cv_page, affichage_analyse
