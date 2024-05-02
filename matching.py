@@ -1871,6 +1871,14 @@ def display_initial_message():
                         margin-right: 10px; /* Espacement après la puce */
                         vertical-align: middle; /* Alignement vertical des puces */
                     }
+                    .call-to-action {
+                        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                        font-size: 1.4vw;
+                        color: #2980B9; /* Dark blue color */
+                        font-weight: bold;
+                        text-align: center;
+                        margin: 20px;
+                    }
                 </style>
                 
                 <div class="custom-container">
@@ -1886,29 +1894,17 @@ def display_initial_message():
                 """,
                     unsafe_allow_html=True,
                 )
-
+        with col2:
+            st.markdown(
+                '<p class="call-to-action">Découvrons votre profil<br>Analysons votre CV <br></p>',
+                unsafe_allow_html=True,
+            )
         with col1:
             st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
         with col3:
             st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
         st.markdown("#")
-        st.markdown(
-            """
-        <style>
-            .upload-instruction {
-                font-size: 1.7vw;
-                color: #34495E; /* Adaptez cette valeur à la couleur désirée */
-                text-align:center;
-                font-weight: bolder;
-            }
-        </style>
 
-        <div class="upload-instruction">
-            Commençons par prendre connaissance de votre profil<br>  
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
         with col2:
             coli1, coli2, coli3 = st.columns([0.3, 0.3, 0.4])
             with coli2:
