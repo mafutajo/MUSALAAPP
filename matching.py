@@ -9,6 +9,7 @@ import streamlit as st
 import pandas as pd
 import time
 import json
+import math
 from pdfminer.high_level import extract_text
 import re
 import streamlit as st
@@ -516,7 +517,10 @@ def analyze_and_display_diploma_distribution_pie(jobs):
 def analyze_and_display_diploma_distribution_histogram(jobs):
     # Compter la fréquence de chaque diplôme
     diploma_count = Counter()
-    excluded_diplomas = ["Pas de diplome ou non reconnu"]
+    excluded_diplomas = [
+        "Pas de diplome ou non reconnu",
+        "Diplome de niveau 4 type Baccalauréat",
+    ]
     total_excluded = 0
 
     for job in jobs:
@@ -584,9 +588,9 @@ def analyze_and_display_diploma_distribution_histogram(jobs):
     dominant_diploma = df.iloc[0]["Diplomas"]
     dominant_percentage = df.iloc[0]["Percentage"]
     if dominant_percentage > 50:
-        result = f"La majorité des offres ({dominant_percentage:.0f}%) demandent un  <bold>{dominant_diploma}</bold>."
+        result = f"La majorité des offres ({dominant_percentage:.0f}%) demandent un  <bold>{dominant_diploma}</bold> au minimum."
     else:
-        result = f"<bold>{dominant_diploma}</bold> est le plus fréquemment demandé , présent dans {dominant_percentage:.0f}% des offres."
+        result = f"<bold>{dominant_diploma}</bold> ,en niveau minimum, est le plus fréquemment demandé , présent dans {dominant_percentage:.0f}% des offres."
 
     # Calculer la part des diplômes exclus
     total_general = total + total_excluded
@@ -1054,7 +1058,7 @@ def update_search_names(data):
                 item["search_name"] = "Développeur Fullstack"
             elif "fullstack" in item["search_name"].lower():
                 item["search_name"] = "Développeur Fullstack"
-            elif "Data ingénieur" in item["search_name"].lower():
+            elif "data ingénieur" in item["search_name"].lower():
                 item["search_name"] = "Développeur Fullstack"
             elif "full-stack" in item["search_name"].lower():
                 item["search_name"] = "Développeur Fullstack"
@@ -1148,7 +1152,7 @@ def affichage_presentation(search_names):
         st.markdown('<h1 class="title">Market</h1>', unsafe_allow_html=True)
         st.markdown("#")
         st.markdown(
-            "<p class='slogan'>L'oeil du marché</p>",
+            "<p class='slogan'>Les Insights du <b>marché</b></p>",
             unsafe_allow_html=True,
         )
         st.markdown("#")
@@ -1157,7 +1161,7 @@ def affichage_presentation(search_names):
             unsafe_allow_html=True,
         )
         st.markdown(
-            '<p class="call-to-action">Explorez les métiers disponibles et découvrez les compétences les plus recherchées.<br> Choisissez un métier pour débuter votre exploration.</p>',
+            '<p class="call-to-action">Découvrez les profils de compétences les plus recherchées.<br></p>',
             unsafe_allow_html=True,
         )
         st.markdown("</div>", unsafe_allow_html=True)
@@ -1172,7 +1176,9 @@ def affichage_presentation(search_names):
         cols = st.columns(3)
         for index, job in enumerate(search_names):
             with cols[index % 3]:
-                if st.button(job, key=job, on_click=set_job_and_rerun, args=(job,)):
+                if st.button(
+                    "**" + job + "**", key=job, on_click=set_job_and_rerun, args=(job,)
+                ):
                     pass  # The bs  # The button click handling is in the set_job_and_rerun function
 
 
@@ -1241,7 +1247,7 @@ def affichage_analyse(chemin_analyse):
             )
             st.markdown("#")
             st.success(
-                f"**{len(filtered_data) * 4 - 50 if len(filtered_data) < 350 else len(filtered_data)} offres sont actuellement analysées**"
+                f"**Plus de {math.ceil((len(filtered_data) * 2) / 100) * 100 * 3} offres d'emploi analysées**"
             )
             # Convertir les chaînes de dates en objets datetime et trouver la date maximale
             dates = []
@@ -1715,6 +1721,8 @@ def display_initial_message():
         col1, col2, col3 = st.columns([0.1, 0.8, 0.1])
         with col2:
             st.markdown("#")
+            st.markdown("#")
+
             st.markdown(
                 """
             <style>
@@ -1759,23 +1767,126 @@ def display_initial_message():
                     display: inline-block;
                     text-align: center;
                 }
+                .slogan {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 2vw;
+                color: #95A5A6; /* Light grey color */
+                text-align: center;
+                margin-top: 10px;
+                font-weight: lighter;
+            }
             </style>
 
             <div>
                 <h1 class="title"><span style=" color:rgb(113,224,203);">Job</span> Finder</h1></div>""",
                 unsafe_allow_html=True,
             )
+            st.markdown("#")
+            st.markdown(
+                """<p class='slogan'> Find your <b>MATCH</b> </p>""",
+                unsafe_allow_html=True,
+            )
+            st.markdown("#")
 
             st.markdown(
                 """
-                <p style="font-size: 1.6vw; text-align: center; margin-right: 2; margin-left: 2;color: #34495E;">Prenons connaissance de  votre profil et laissez <span style=" color:rgb(113,224,203);font-weight:bolder;"> nous </span>  vous trouver les <span style=" color:rgb(113,224,203);font-weight:bolder;"> meilleures opportunités </span>pour vous.</p>
-                <p style="font-size: 1.8vw; text-align: center; color: #2C3E50; font-weight: bold; margin-top: 20px;">
-                    Prêt à avancer avec Nest ? <span style="color: rgb(113,224,203); cursor: pointer;" onclick="document.getElementById('file-upload').click();">Chargez ici votre CV</span>
-                </p>
-            </div>
-            """,
+                <style>
+                    .theme-nest1 {
+                        padding: 10px;
+                        border-radius: 10px;
+                    }
+                    .theme-nest2 {
+                        background-color: #F5F5DC; /* Changer selon le thème de NEST */
+                        padding: 10px;
+                        border-radius: 10px;
+                    }
+                    .img-description {
+                        text-align: center; /* Alignement du texte pour le sous-titre */
+                        color: #34495E; /* Couleur plus douce pour le sous-titre */
+                        font-size: 3.8vw; /* Taille de la police pour le sous-titre */
+                    }
+                    .img-descriptif{
+                        text-align: center; /* Alignement du texte pour le sous-titre */
+                        color: #34495E; /* Couleur plus douce pour le sous-titre */
+                        font-size: 3.4vw; /* Taille de la police pour le sous-titre */
+                        background-color: #F5F5F5; /* Couleur de fond gris beige */
+                        padding: 20px;
+                        border-radius: 10px;
+                        margin: 20px;
+                    }
+                    .side-column {
+                    background-color: #2980B9; /* Dark blue color */
+                    height: 100vh; /* Full height of the viewport */
+                }
+
+                </style>
+                """,
                 unsafe_allow_html=True,
             )
+        with col2:
+            coli1, coli2, coli3, coli4, coli5, coli6, coli7 = st.columns(
+                [1, 1, 4, 0.01, 4, 1, 1]
+            )
+
+            with coli3:
+                st.image("photo.jpg", use_column_width=True)
+            with coli5:
+                st.markdown(
+                    """
+                <style>
+                    .custom-container {
+                        background-color: #fff; /* Fond blanc */
+                        border-left: 6px solid  white; /* Bordure violette à gauche */
+                        padding: 20px;
+                        margin: 10px 0;
+                        font-family: Arial, sans-serif; /* Police moderne */
+                    }
+                    .custom-header {
+                        color:  #2874A6; /* Couleur du titre */
+                        font-size: 24px; /* Taille du titre */
+                        font-weight: bold; /* Gras pour le titre */
+                        margin-bottom: 10px; /* Espacement après le titre */
+                    }
+                    .custom-list {
+                        color: #34495e;
+                        padding-left: 20px; /* Padding pour aligner avec le titre */
+                        list-style: none; /* Pas de puces classiques */
+                        margin-bottom: 0; /* Ajuster selon besoin */
+                    }
+                    .custom-list li {
+                        margin-bottom: 10px; /* Espacement entre les éléments */
+                        font-size: 1.0vw; /* Taille de police pour les éléments de liste */
+                        padding-bottom: 10px; /* Padding au bas de chaque élément */
+                        padding-top: 10px; /* Padding au bas de chaque élément */
+                        border-bottom: 1px solid #ddd; /* Ligne de séparation */
+                    }
+                    .custom-list li:last-child {
+                        border-bottom: none; /* Pas de bordure au dernier élément */
+                    }
+                    .custom-list li:before {
+                    
+                        color: #9b59b6; /* Couleur des puces */
+                        font-size: 18px; /* Taille des puces */
+                        line-height: 18px;
+                        margin-right: 10px; /* Espacement après la puce */
+                        vertical-align: middle; /* Alignement vertical des puces */
+                    }
+                </style>
+                
+                <div class="custom-container">
+                    <div class="custom-header"> NEST vous trouve une offre..<br></div>
+                    <ul class="custom-list">
+                        <li>Alignée sur vos <b>competences techniques</b></li>
+                        <li> Adaptée à votre <b>niveau d'éxperience</b></li>
+                        <li> Qui respectent vos  <b>contraites spaciales</b></li>
+                        <li> Proche de vos <b>valeurs humaines</b></li>
+                        <li> Qui valorise votre parcours académiques <b>valeurs humaines</b></li>
+                    </ul>
+                </div>
+                """,
+                    unsafe_allow_html=True,
+                )
+
         with col1:
             st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
         with col3:

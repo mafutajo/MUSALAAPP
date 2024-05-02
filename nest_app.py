@@ -162,7 +162,7 @@ def page_presentation():
             }
             .custom-list li {
                 margin-bottom: 10px; /* Espacement entre les éléments */
-                font-size: 16px; /* Taille de police pour les éléments de liste */
+                font-size: 1.0vw;/* Taille de police pour les éléments de liste */
                 padding-bottom: 10px; /* Padding au bas de chaque élément */
                 border-bottom: 1px solid #ddd; /* Ligne de séparation */
             }
@@ -185,7 +185,7 @@ def page_presentation():
                 <li>Connaissance <b>approfondie du marché </b>et <b>détection des tendances </b>en matière de recrutement technologiques</li>
                 <li>Valorisation <b>claire des profils</b> grâce à des outils de présélection et de sélection efficaces dans le processus de recrutement.</li>
                 <li>Optimiser le temps consacré au recrutement ou au placement de profils techniques. </li>
-                <li>Optimisation continue des<b>processus de recrutement</b> pour mieux répondre aux évolutions du marché.</li>
+                <li>Optimisation continue des <b>processus de recrutement</b> pour mieux répondre aux évolutions du marché.</li>
             </ul>
         </div>
         """,
