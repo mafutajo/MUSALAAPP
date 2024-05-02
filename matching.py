@@ -709,7 +709,7 @@ def retribution_HS(top_hard_skills, selected_name, median, moyenne):
             unsafe_allow_html=True,
         )
         st.warning(
-            " *la maitrise ne signifie pas etre **expert** mais au moins connaitre ces technos ou équivalent."
+            " *la maitrise ne signifie pas etre **expert** mais au moins connaitre ces technologies ou équivalent."
         )
         # if overall_note < 0:
         #     st.markdown(
@@ -1185,15 +1185,12 @@ def affichage_presentation(search_names):
 def set_job_and_rerun(job):
     st.session_state.selected_job = job
     st.session_state.phase = 2
-    st.rerun()
 
 
 def set_job_and_rerun(job):
     st.session_state.selected_job = job
     st.session_state.phase = 2
     st.session_state.page = 0
-
-    st.rerun()
 
 
 def affichage_analyse(chemin_analyse):
