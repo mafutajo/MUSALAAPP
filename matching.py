@@ -262,7 +262,7 @@ def normalize_skills(skill):
     str: La compétence normalisée.
     """
     skill = skill.lower().strip()
-    if "power" in skill or "bi" in skill:
+    if skill == "power" or "bi" == skill:
         return "power bi"
     return skill
 
