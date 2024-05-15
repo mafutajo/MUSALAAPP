@@ -261,9 +261,10 @@ def normalize_skills(skill):
     Returns:
     str: La compétence normalisée.
     """
-    skill = skill.lower().strip()
+    skill = skill.lower()
     if skill == "power" or "bi" == skill or skill == "powerbi" or skill == "power.bi":
         return "power bi"
+
     return skill
 
 
@@ -296,7 +297,7 @@ def calculate_top_hard_skills(filtered_data, top_n=10):
                 normalize_skills(skill) for skill in item["hard_skills"]
             )
             for skill in normalized_skills:
-                if skill in hard_skill_counts:
+                if skill in hard_skill_counts and skill != "devops":
                     hard_skill_counts[skill] += 1
                 else:
                     hard_skill_counts[skill] = 1
