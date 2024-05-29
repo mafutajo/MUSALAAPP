@@ -1044,6 +1044,7 @@ def obtenir_description_metier(nom_metier):
         "Administrateur système": "L'Administrateur système est responsable de la gestion, de la configuration et du maintien en condition opérationnelle des systèmes informatiques d'une entreprise, assurant la sécurité et la stabilité de l'infrastructure.",
         "Ux designer": "L'UX Designer conçoit et améliore l'expérience utilisateur des produits digitaux. Il analyse les comportements des utilisateurs et crée des interfaces qui sont à la fois intuitives et esthétiques.",
         "Data ingénieur": "Le Data Ingénieur développe, construit, teste et maintient des architectures telles que des bases de données et des systèmes de traitement des données à grande échelle.",
+        "Specialist seo ⭐": "Le Spécialiste SEO optimise les sites web pour améliorer leur visibilité sur les moteurs de recherche et augmenter le trafic organique. Il analyse et audite les sites, réalise des recherches de mots-clés, et optimise les balises et le contenu. Il développe des stratégies de contenu en collaboration avec les rédacteurs et met en œuvre des campagnes de link building pour renforcer l'autorité du site.",
     }
 
     return descriptions.get(nom_metier, "Description non disponible pour ce métier.")
@@ -1074,6 +1075,10 @@ def update_search_names(data):
                 item["search_name"] = "Développeur logiciel"
             elif item["search_name"] == "UX":
                 item["search_name"] = "UX Designer"
+            elif item["search_name"] == "seo":
+                item["search_name"] = "Specialist SEO ⭐"
+            elif item["search_name"] == "q&a":
+                item["search_name"] = "Développeur logiciel"
     # Retourner la liste modifiée
     return data
 
@@ -1082,98 +1087,89 @@ import random
 
 
 def affichage_presentation(search_names):
-    # Ajout de CSS personnalisé pour améliorer l'apparence
-    st.markdown(
-        """
-        <style>
-            .title {
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 4vw;
-                color: #3498db; /* Dark blue color for title */
-                text-align: center;
-            }
-            .pretitle {
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 2vw;
-                color: #3498db; /* Dark blue color for title */
-                text-align: center;
-            }
-            .description {
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 1vw;
-                color: #34495E; /* Darker text color for better readability */
-                text-align: center;
-                margin: 20px;
-                background-color: #DAE8FC; /* Couleur subtile pour les sections d'explication */
-                        padding: 20px;
-                        border-radius: 10px;
-                        margin-bottom: 20px
-            }
-            .main-container {
-                padding: 20px;
-                border-radius: 5px;
-                background-color: #FFFFFF; /* White background for contrast */
-            }
-            .side-column {
-                background-color: #2980B9; /* Dark blue color */
-                height: 100vh; /* Full height of the viewport */
-            }
-            .call-to-action {
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 1.4vw;
-                color: #2980B9; /* Dark blue color */
-                font-weight: bold;
-                text-align: center;
-                margin: 20px;
-            }
-            .slogan {
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 2vw;
-                color: #95A5A6; /* Light grey color */
-                text-align: center;
-                margin-top: 10px;
-                font-weight: lighter;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
 
-    # Configuration du titre et de la description dans une structure de colonne
-    col1, col2, col3 = st.columns([0.1, 0.8, 0.1], gap="large")
-    with col1:
+    split = st.columns([2, 0.5, 2], gap="large")
+
+    with split[0]:
+
         st.markdown(
-            '<div class="side-column"></div>', unsafe_allow_html=True
-        )  # Empty but with blue background
-    with col2:
+            """
+            <style>
+                .main-container {
+                    padding: 4rem 1rem;
+                }
+                .pretitle {
+                    font-size: 3vw;
+                    color:#302838;
+                    font-weight: lighter;
+                    margin-bottom: 0;
+                    text-align: center;
+                }
+                .pretitle_ {
+                    font-size: 2vw;
+                    color:#302838;
+                    font-weight: bolder;
+                    margin-bottom: 0px;
+                    text-align: center;
+                }
+                
+                .title {
+                    font-size: 4vw;
+                    font-weight: bold;
+                    margin-bottom: 0.5em;
+                    color:#302838;
+                    text-align: center;
+                } 
 
-        # Configuration du titre, de l'introduction et de l'invitation à l'action
+                .slogan {
+                    font-size: 1.5vw;
+                    color:#302838;
+                    color: darkblue;
+                    text-align: left;
+                    
+                }
+                .description {
+                    font-size: 1vw;
+                    
+                    color:#302838;
+                    text-align: left;
+                    margin-top: 20px;
+                }
+            </style>
+        """,
+            unsafe_allow_html=True,
+        )
+
+        # Header section
         st.markdown('<div class="main-container">', unsafe_allow_html=True)
         st.markdown('<h2 class="pretitle">The</h2>', unsafe_allow_html=True)
         st.markdown('<h1 class="title">Market</h1>', unsafe_allow_html=True)
-        st.markdown("#")
         st.markdown(
-            "<p class='slogan'>Les Insights du <b>marché</b></p>",
-            unsafe_allow_html=True,
-        )
-        st.markdown("#")
-        st.markdown(
-            "<p class=\"description\">Notre IA analyse les offres d'emploi fournies par de multiples plateformes afin d'avoir un œil qualitatif sur des métiers de la tech. Cette approche permet d'identifier les compétences et expériences les plus demandées et de fournir une perspective complète sur le marché du travail actuel dans le secteur technologique.</p>",
+            "<p class='slogan'>Restez competitif grace à l'analyse du <b>marché</b></p>",
             unsafe_allow_html=True,
         )
         st.markdown(
-            '<p class="call-to-action">Découvrez les profils de compétences les plus recherchées.<br></p>',
+            """
+            <p class="description">
+            Gardez un avantage compétitif sur le marché en analysant les technologies en vogue et les <strong>hard skills</strong> nécessaires. Adoptez l'attitude adéquate avec les <strong>soft skills</strong> pertinents, assurez-vous d'avoir le diplôme requis, et maîtrisez les <strong>niveaux de langue</strong> nécessaires pour vous démarquer. <br>Notre IA analyse chaque jour des milliers d'offres d'emploi, vous permettant de rester à la pointe de l'évolution du marché et de vous positionner stratégiquement pour les opportunités à venir.
+            </p>
+            """,
             unsafe_allow_html=True,
         )
-        st.markdown("</div>", unsafe_allow_html=True)
-        st.markdown("#")
 
-    with col3:
-        st.markdown(
-            '<div class="side-column"></div>', unsafe_allow_html=True
-        )  # Empty but with blue background
+    # Ajout de CSS personnalisé pour améliorer l'apparence
 
-    with col2:
+    with split[2]:
+
+        st.markdown('<div class="main-container">', unsafe_allow_html=True)
+        st.markdown('<div class="main-container">', unsafe_allow_html=True)
+
+        st.markdown(
+            '<h3 class="pretitle_">Découvrez ces métiers de la tech </h3>',
+            unsafe_allow_html=True,
+        )
+        st.markdown("#")
+        st.markdown("#")
         cols = st.columns(3)
         for index, job in enumerate(search_names):
             with cols[index % 3]:
@@ -1183,9 +1179,13 @@ def affichage_presentation(search_names):
                     pass  # The bs  # The button click handling is in the set_job_and_rerun function
 
 
-def set_job_and_rerun(job):
-    st.session_state.selected_job = job
-    st.session_state.phase = 2
+import base64
+
+
+def get_base64_of_bin_file(file_path):
+    """Encode le fichier binaire en base64."""
+    with open(file_path, "rb") as file:
+        return base64.b64encode(file.read()).decode("utf-8")
 
 
 def set_job_and_rerun(job):
@@ -1245,7 +1245,7 @@ def affichage_analyse(chemin_analyse):
             )
             st.markdown("#")
             st.success(
-                f"**Plus de {math.ceil((len(filtered_data) * 2) / 100) * 100 * 3} offres d'emploi analysées**"
+                f"**Plus de {math.ceil((len(filtered_data) * 2) / 100) * 100 * 3} offres d'emploi analysés**"
             )
             # Convertir les chaînes de dates en objets datetime et trouver la date maximale
             dates = []
@@ -1265,9 +1265,16 @@ def affichage_analyse(chemin_analyse):
                 ).days
 
             # Préparation de l'affichage Streamlit
-            st.warning(
-                f"⏰⏰ **Dernière mise à jour il y a {days_since_last_update} jours**"
-            )
+            if days_since_last_update == 0:
+                st.warning(f"⏰⏰ **Dernière mise à jour aujourd'hui**")
+
+            elif days_since_last_update == 1:
+                st.warning(f"⏰⏰ **Dernière mise à jour hier**")
+
+            else:
+                st.warning(
+                    f"⏰⏰ **Dernière mise à jour il y a {days_since_last_update} jours**"
+                )
 
         st.markdown("#")
         st.markdown("#")
@@ -1716,200 +1723,90 @@ def afficher_messages():
 
 def display_initial_message():
     if st.session_state.get("matching_stage", 0) == 0:
-        col1, col2, col3 = st.columns([0.1, 0.8, 0.1])
-        with col2:
-            st.markdown("#")
-            st.markdown("#")
-
-            st.markdown(
-                """
-            <style>
-                /* Effacer tout padding ou margin par défaut de Streamlit */
-                .reportview-container .main .block-container {
-                    padding-top: 0;
-                    padding-right: 1rem;
-                    padding-left: 1rem;
-                    padding-bottom: 1rem;
-                }
-                /* Supprimer le footer de Streamlit */
-                footer {
-                    visibility: hidden;
-                }
-                .side-column {
-                background-color: #2980B9; /* Dark blue color */
-                height: 100vh; /* Full height of the viewport */
-                    }
-                /* Supprimer l'icone de menu de Streamlit */
-                header {visibility: hidden;}
-                
-                /* Style pour le titre */
-                .title {
-                    color: #3498db; /* Bleu lumineux */
-                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Police élégante */
-                    text-align: center;
-                    font-size: 3.4vw; /* Taille de la police grande */
-                    font-weight: 600; /* Gras */
-                    margin-top: 50px; /* Espacement du haut */
-                    margin-bottom: 20px; /* Espacement du bas */
-                }
-
-                /* Bouton de téléchargement stylisé */
-                .upload-button {
-                    background-color: #3498db;
-                    color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 5px;
-                    font-size: 16px;
-                    cursor: pointer;
-                    display: inline-block;
-                    text-align: center;
-                }
-                .slogan {
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 2vw;
-                color: #95A5A6; /* Light grey color */
-                text-align: center;
-                margin-top: 10px;
-                font-weight: lighter;
+        # Styles CSS pour aligner et styliser le contenu
+        css = """
+        <style>
+            .container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 50px;
             }
-            </style>
+            .text {
+                text-align: left;
+                width: 50%;
+            }
+            .image {
+                width: 40%;
+            }
+            .title {
+                font-size: 4vw;
+                font-weight: lighter;
+                margin-bottom: 0.5em;
+                color:#302838; 
+            }
+            .description {
+                font-size: 4vw;
+                margin-bottom: 2em;
+                transition: transform 0.3s, background-color 0.1s;
+                padding: 10px;
+                border-radius: 5px;
+                color:#302838; 
+            }
+            .description:hover {
+                transform: scale(1.15);
+                background-color: #f0f8ff; /* Couleur pastel */
+                color:#302838; 
+            }
+            
+            .bullet-points {
+                list-style-type: disc;
+                padding-left: 20px;
+                font-size: 3vw;
+                color:#302838; 
+            }
+        </style>
+        """
 
-            <div>
-                <h1 class="title"><span style=" color:rgb(113,224,203);">Job</span> Finder</h1></div>""",
-                unsafe_allow_html=True,
-            )
+        # Inclure les styles CSS dans Streamlit
+        st.markdown(css, unsafe_allow_html=True)
+
+        # Chemin de l'image téléchargée
+
+        coler = st.columns(2, gap="large")
+        with coler[0]:
+            st.image("./static/candidat.jpg", use_column_width=True)
+        # Contenu de l'analyse et du matching
+
+        # Afficher le contenu HTML dans Streamlit
+
+        with coler[1]:
+            st.markdown("#")
+            st.markdown("#")
+            st.markdown("#")
+            st.markdown("#")
+            st.markdown("#")
+            st.markdown("#")
+            st.markdown("#")
             st.markdown("#")
             st.markdown(
-                """<p class='slogan'> Find your <b>MATCH</b> </p>""",
+                '<h1 class="title">I.A au service de votre <bold> carrière</bold> </h1>',
                 unsafe_allow_html=True,
             )
-            st.markdown("#")
-
             st.markdown(
                 """
-                <style>
-                    .theme-nest1 {
-                        padding: 10px;
-                        border-radius: 10px;
-                    }
-                    .theme-nest2 {
-                        background-color: #F5F5DC; /* Changer selon le thème de NEST */
-                        padding: 10px;
-                        border-radius: 10px;
-                    }
-                    .img-description {
-                        text-align: center; /* Alignement du texte pour le sous-titre */
-                        color: #34495E; /* Couleur plus douce pour le sous-titre */
-                        font-size: 3.8vw; /* Taille de la police pour le sous-titre */
-                    }
-                    .img-descriptif{
-                        text-align: center; /* Alignement du texte pour le sous-titre */
-                        color: #34495E; /* Couleur plus douce pour le sous-titre */
-                        font-size: 3.4vw; /* Taille de la police pour le sous-titre */
-                        background-color: #F5F5F5; /* Couleur de fond gris beige */
-                        padding: 20px;
-                        border-radius: 10px;
-                        margin: 20px;
-                    }
-                    .side-column {
-                    background-color: #2980B9; /* Dark blue color */
-                    height: 100vh; /* Full height of the viewport */
-                }
-
-                </style>
+                <p style='font-size:1.3vw;'>
+                    Votre CV est <b>analysé</b> et <b>testé</b> sur les principaux <b>job boards</b> du moment afin de vous proposer le <b>job</b> qui correspond le mieux à vos compétences et aspirations.
+                </p>
                 """,
                 unsafe_allow_html=True,
             )
-        with col2:
-            coli1, coli2, coli3, coli4, coli5, coli6, coli7 = st.columns(
-                [1, 1, 4, 0.01, 4, 1, 1]
-            )
 
-            with coli3:
-                st.image("photo.jpg", use_column_width=True)
-            with coli5:
-                st.markdown(
-                    """
-                <style>
-                    .custom-container {
-                        background-color: #fff; /* Fond blanc */
-                        border-left: 6px solid  white; /* Bordure violette à gauche */
-                        padding: 20px;
-                        margin: 10px 0;
-                        font-family: Arial, sans-serif; /* Police moderne */
-                    }
-                    .custom-header {
-                        color:  #2874A6; /* Couleur du titre */
-                        font-size: 24px; /* Taille du titre */
-                        font-weight: bold; /* Gras pour le titre */
-                        margin-bottom: 10px; /* Espacement après le titre */
-                    }
-                    .custom-list {
-                        color: #34495e;
-                        padding-left: 20px; /* Padding pour aligner avec le titre */
-                        list-style: none; /* Pas de puces classiques */
-                        margin-bottom: 0; /* Ajuster selon besoin */
-                    }
-                    .custom-list li {
-                        margin-bottom: 10px; /* Espacement entre les éléments */
-                        font-size: 1.0vw; /* Taille de police pour les éléments de liste */
-                        padding-bottom: 10px; /* Padding au bas de chaque élément */
-                        padding-top: 10px; /* Padding au bas de chaque élément */
-                        border-bottom: 1px solid #ddd; /* Ligne de séparation */
-                    }
-                    .custom-list li:last-child {
-                        border-bottom: none; /* Pas de bordure au dernier élément */
-                    }
-                    .custom-list li:before {
-                    
-                        color: #9b59b6; /* Couleur des puces */
-                        font-size: 18px; /* Taille des puces */
-                        line-height: 18px;
-                        margin-right: 10px; /* Espacement après la puce */
-                        vertical-align: middle; /* Alignement vertical des puces */
-                    }
-                    .call-to-action {
-                        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                        font-size: 1.4vw;
-                        color: #2980B9; /* Dark blue color */
-                        font-weight: bold;
-                        text-align: center;
-                        margin: 20px;
-                    }
-                </style>
-                
-                <div class="custom-container">
-                    <div class="custom-header"> NEST vous trouve une offre..<br></div>
-                    <ul class="custom-list">
-                        <li>Alignée sur vos <b>competences techniques</b></li>
-                        <li> Adaptée à votre <b>niveau d'éxperience</b></li>
-                        <li> Qui respectent vos  <b>contraites spaciales</b></li>
-                        <li> Proche de vos <b>valeurs humaines</b></li>
-                        <li> Qui valorise votre parcours académiques <b>valeurs humaines</b></li>
-                    </ul>
-                </div>
-                """,
-                    unsafe_allow_html=True,
-                )
-        with col2:
-            st.markdown(
-                '<p class="call-to-action">Découvrons votre profil<br>Analysons votre CV <br></p>',
-                unsafe_allow_html=True,
-            )
-        with col1:
-            st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
-        with col3:
-            st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
-        st.markdown("#")
-
-        with col2:
-            coli1, coli2, coli3 = st.columns([0.3, 0.3, 0.4])
+            coli1, coli2, coli3 = st.columns([1, 2, 1])
             with coli2:
                 uploaded_file = st.file_uploader(" ", type="pdf")
 
-            with coli3:
-                st.markdown("#")
+            with coli2:
 
                 bouton_validation = st.button("Lancez la recherche")
                 if uploaded_file is not None and bouton_validation is not None:
@@ -1917,14 +1814,14 @@ def display_initial_message():
                         st.success(
                             "**La section Job Finder est disponible en demonstration** rendez vous dans la section About Nest "
                         )
-                    # st.empty()
-                    # # Stockez temporairement le fichier pour éviter la perte lors du rechargement
-                    # st.session_state["temp_uploaded_file"] = uploaded_file
-                    # st.session_state["fichier_telecharger"] = 1
-                    # # Changement de l'état pour passer au parsing
-                    # st.session_state["matching_stage"] = 1
+                        st.empty()
+                        # # Stockez temporairement le fichier pour éviter la perte lors du rechargement
+                        st.session_state["temp_uploaded_file"] = uploaded_file
+                        st.session_state["fichier_telecharger"] = 1
+                        # # Changement de l'état pour passer au parsing
+                        st.session_state["matching_stage"] = 1
 
-                    # reinitialiser_pagination_et_selections()
+                        reinitialiser_pagination_et_selections()
 
 
 @st.cache_resource
@@ -2652,12 +2549,6 @@ def initial_test():
             """,
             unsafe_allow_html=True,
         )
-    with col1:
-        st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
-    with col3:
-        st.markdown('<div class="side-column"></div>', unsafe_allow_html=True)
-    st.markdown("#")
-
     # Utilisation de colonnes pour une meilleure organisation visuelle
     with col2:
         coli1, coli2, coli3, coli4 = st.columns([1, 2, 2, 1])

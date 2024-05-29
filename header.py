@@ -62,7 +62,7 @@ def header() -> str:
         .musala-headerx {
             font-size: 5vw; /* Taille de la police */
             font-weight: 600; /* Épaisseur de la police */
-            color: #1B4F72; /* Couleur de la police */
+            color: #302838; /* Couleur de la police */
             text-align: center; /* Alignement du texte */
         }
         .subtitle {
@@ -154,7 +154,7 @@ def header() -> str:
             styles={
                 "container": {
                     "padding": "0!important",
-                    "background-color": "white",
+                    "background-color": "#fbebe3",
                     "width": "100%",
                     "margin": "0",
                     "padding": "0",
@@ -168,7 +168,7 @@ def header() -> str:
                     "--hover-color": "gray",
                 },
                 "nav-link-selected": {
-                    "background-color": "#1B4F72",
+                    "background-color": "#302838",
                     "text-align": "center",
                     "font-size": "2.3vw",
                 },
@@ -197,152 +197,101 @@ def action_right():
     st.session_state["menu_option_integer"] = 1
 
 
+def set_background_color():
+    css = """
+    <style>
+        html, body, [data-testid="stAppViewContainer"] {
+            background-color: #fde9e5;
+        }
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+
 def accueil():
-    st.markdown(
-        """
-        <style>
-            body {
-                background: linear-gradient(45deg, #ffffff, #f5f5f5); /* Dégradé de blanc à blanc cassé */
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-    voxlone, colonne1, colonne2 = st.columns([0.2, 0.8, 0.2], gap="small")
-    with colonne1:
-        # HTML/CSS personnalisé pour le reste de la page d'accueil
-        st.markdown(
-            """
-                <style>
+    set_background_color()
+    st.markdown("#")
+    st.markdown("#")
+    st.markdown("#")
 
-                    body {
-                        background-color: #F4F4F4;
-                        text-align: center;
-                        font-size: 1.4vw;
-                    }
-                    .container {
-                        max-width: 80vw; /* Ajustement pour rendre le conteneur réactif */
-                        margin: 2vw auto;
-                        padding: 2vw;
-                        background-color: #FFFFFF;
-                        border-radius: 1vw;
-                        box-shadow: 0 0 1vw rgba(0, 0, 0, 0.1);
-                    }
+    def get_base64_of_bin_file(bin_file):
+        with open(bin_file, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
 
-                    .header {
-                        color: rgb(113,224,203);
-                        font-size: clamp(1.0vw, 2.5%, 1.2vw); /* Ajustement dynamique de la taille */
-                    }
-                    .explication, h1, h2, summary {
-                        color: #34495E;
-                        font-size: clamp(1.5vw, 3%, 1.8vw); /* Utilisation de clamp pour un ajustement dynamique */
-                    }
-                    .container {
-                        max-width: 1000px;
-                        margin: 25px auto;
-                        padding: 20px;
-                        background-color: #FFFFFF; /* Fond blanc pour le contenu */
-                        border-radius: 10px;
-                        font-size: 1.7vw;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Ombre douce */
-                    }
+    # Styles CSS pour aligner et styliser le contenu
+    css = """
+    <style>
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 50px;
+        }
+        .text {
+            text-align: left;
+            width: 50%;
+        }
+        .image {
+            width: 40%;
+        }
+        .title {
+            font-size: 4vw;
+            font-weight: bold;
+            margin-bottom: 0.5em;
+            color:#302838; 
+        }
+        .description {
+            font-size: 4vw;
+            margin-bottom: 2em;
+            transition: transform 0.3s, background-color 0.1s;
+            padding: 10px;
+            border-radius: 5px;
+            color:#302838; 
+        }
+        .description:hover {
+            transform: scale(1.15);
+            background-color: #f0f8ff; /* Couleur pastel */
+            color:#302838; 
+        }
+        
+        .bullet-points {
+            list-style-type: disc;
+            padding-left: 20px;
+            font-size: 3vw;
+            color:#302838; 
+        }
+    </style>
+    """
 
-                    .header{
-                        color: rgb(113,224,203);
-                        font-size: 1.0vw; /* Gris Anthracite pour les textes */
-                    }
-                   
-                    .explication {
-                        background-color: #DAE8FC; /* Couleur subtile pour les sections d'explication */
-                        padding: 20px;
-                        border-radius: 10px;
-                        margin-bottom: 20px;
-                    }
-                    .axe-analyse-explication {
-                        display: flex;
-                        flex-wrap: wrap;
-                        
-                        justify-content: space-between;
-                    }
-                    .axe-analyse {
-                        flex: 1;
-                        background-color: #DAE8FC;
-                        margin: 10px;
-                        font-size: 1.3vw;
-                        text-align: center;
-                        /* Vert clair pour les axes d'analyse */
-                        padding: 20px;
-                        border-radius: 10px;
-                    }
+    # Inclure les styles CSS dans Streamlit
+    st.markdown(css, unsafe_allow_html=True)
 
-                    .axe-analyse2 {
-                        flex: 1;
-                        background-color: rgb(113,224,203);
-                        margin: 10px;
-                        font-size: 1.4vw;
-                        text-align: center;
-                        /* Vert clair pour les axes d'analyse */
-                        padding: 20px;
-                        border-radius: 10px;
-                    }
-                    p {
-                        color: #000000; /* Texte noir pour une meilleure lisibilité */
-                    }
-                </style>
-                <div class="container">
-                    <div class="header">
-                        <h1 ><span style="color: rgb(113,224,203);"> NEST :</span> un outil stratégique et un allié du succès professionnel.</h1>
-                        <p>Découvrez comment nous valorisons chaque aspect de votre profil pour une opportunité sur mesure.</p>
-                    </div>
-                    <div class="explication">
-                        <h2>Les axes d'analyse NEST</h2>
-                        <p> NEST utilise des axes d'analyse spécifiques pour aligner vos compétences et aspirations avec les opportunités de carrière idéales.</p>
-                    </div>
-                    <div class="expander">
-                        <details open>
-                            <summary>Voici en detail les axes d'analyse</summary>
-                            <div class="axe-analyse-explication">
-                                <div class="axe-analyse">
-                                    <h3>Formation Académique</h3>
-                                    <p>Une mise en valeur de votre parcours éducatif souligne la base de vos connaissances et compétences.</p>
-                                </div>
-                                <div class="axe-analyse2">
-                                    <h3>Compétences Comportementales</h3>
-                                    <p>Les soft skills sont cruciales pour démontrer votre capacité à évoluer dans divers environnements de travail.</p>
-                                </div>
-                                <div class="axe-analyse">
-                                    <h3>Compétences Techniques</h3>
-                                    <p>Vos hard skills et outils technologiques maîtrisés reflètent votre aptitude à répondre aux exigences spécifiques du poste.</p>
-                                </div>
-                                  <div class="axe-analyse2">
-                            <h3>Langues Parlées</h3>
-                            <p>L'aptitude à communiquer dans plusieurs langues est un atout précieux dans un contexte professionnel globalisé.</p>
-                        </div>
-                        <div class="axe-analyse">
-                            <h3>Localisation & Mobilité</h3>
-                            <p>La flexibilité géographique et la disposition à la mobilité peuvent ouvrir des portes à des opportunités uniques.</p>
-                        </div>
-                        <div class="axe-analyse2">
-                                    <h3>Expérience Professionnelle</h3>
-                                    <p>Votre historique de travail et les réussites professionnelles montrent votre évolution et l'impact dans vos rôles précédents.</p>
-                                </div>
-                            </div>
-                        </details>
-                    </div>
-                </div>
-                """,
-            unsafe_allow_html=True,
-        )
-    with colonne2:
-        st.write("#")
-        st.write("#")
-        st.write("#")
-        image = Image.open("nest_logo.png")
-        st.image(image)
-        # st.markdown(
-        #     """
-        #     <h4 style='text-align: center;font-weight: bolder;font-size: 2vw;font-weight: 600;color:rgba(56,181,165,255);'> <bold> Hire with Ease </bold>  </h4>
+    # Chemin de l'image téléchargée
+    image_path = "./static/acceuil.png"
+    image_base64 = get_base64_of_bin_file(image_path)
 
-        #     """,
-        #     unsafe_allow_html=True,
-        # )
+    # Contenu de l'analyse et du matching
+    bullet_points = """
+    <ul class="bullet-points">
+        <li class="description">Outil d'analyse et de matching de CV basé sur les compétences.</li>
+        <li class="description">Analyse des profils pour différents métiers.</li>
+        <li class="description">Recommandations personnalisées pour les candidats et les recruteurs.</li>
+    </ul>
+    """
+
+    # HTML pour structurer la page avec l'image et les bullet points
+    html_content = f"""
+    <div class="container">
+        <div class="image">
+            <img src="data:image/png;base64,{image_base64}" alt="Illustration" style="width: 100%;">
+        </div>
+        <div class="text">
+            <div class="title">Recrutons le futur <span style='color:#47855b;'> ensemble</span></div>
+            {bullet_points}
+        
+    </div>
+    """
+
+    # Afficher le contenu HTML dans Streamlit
+    st.markdown(html_content, unsafe_allow_html=True)

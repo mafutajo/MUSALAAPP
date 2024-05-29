@@ -268,12 +268,24 @@ def page_presentation():
         )
 
 
+def set_background_color():
+    css = """
+    <style>
+        html, body, [data-testid="stAppViewContainer"] {
+            background-color: #fde9e5;
+        }
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+
 # Appeler la fonction pour afficher la page
 # ########### PAGE DE GESTION ########################
 if selected == "Accueil":
     accueil()
 
 if selected == "Job Finder":
+    set_background_color()
     job_offer_parser()
 
 if selected == "Job Fit":
@@ -282,4 +294,6 @@ if selected == "About Nest":
     page_presentation()
 
 if selected == "The Market":
+    set_background_color()
+
     affichage_analyse("JOB_ANALYSIS.json")

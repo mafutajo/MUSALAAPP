@@ -1245,36 +1245,46 @@ def nettoyer_taches(taches):
 
 
 def sliding_window2(listed_text_cv, window_size, overlap):
+    """
+    Generator function for creating sliding windows.
+    This function helps in managing large lists by yielding one window at a time.
+    """
     step = window_size - overlap
-    return [
-        listed_text_cv[i : i + window_size] for i in range(0, len(listed_text_cv), step)
-    ]
+    for i in range(0, len(listed_text_cv), step):
+        yield listed_text_cv[i : i + window_size]
 
 
 def parsing_joboffer(
     text_cv: str | st.runtime.uploaded_file_manager.UploadedFile,
 ) -> dict:
+    # Convert UploadedFile to string if necessary
     if not isinstance(text_cv, str):
         bytes_content: bytes = text_cv.read()
         text_cv: str = extract_text(io.BytesIO(bytes_content)).replace("\x00", "\uFFFD")
 
+    # Transform the text CV into a filtered list of segments
     listed_text_cv = [
-        x for x in list(filter(None, transform(text_cv))) if not has_useless_text(x)
+        x for x in filter(None, transform(text_cv)) if not has_useless_text(x)
     ]
 
+    # Define window parameters
     window_size = 50
-    overlap = 49
-    base = sliding_window2(listed_text_cv, window_size, overlap)
+    overlap = 15
 
-    print(base)
+    # Generate sliding windows using a generator to manage memory usage better
+    base = list(sliding_window2(listed_text_cv, window_size, overlap))
+
+    # Initialize the parsing model
     Parseur = model_parseur_()
 
+    # Optional: Output the base to the console or Streamlit app for debugging
+    print(base)
     # st.write(base)
-    # Convertir chaque fenêtre en une liste de mots (pour split_on_space=False)
-    # windows_as_word_lists = [base]  # Assurez-vous que `window` est un str ici
 
-    # Appeler le modèle une seule fois avec la liste des listes de mots
+    # Predict using the Parseur model, assuming it can handle a list of lists directly
+    # If the model cannot handle this format, adjust the input accordingly
     predictions, _ = Parseur.predict(base, split_on_space=False)
+
     from itertools import chain
 
     predictions = list(chain.from_iterable(predictions))
@@ -1459,9 +1469,9 @@ def parsing_joboffer(
     experiences, time = recreate_experience(sortie, text_cv)
     sortie.update(parcours_pro=experiences),
 
-    predictor = chargement_hardfit_()
+    # predictor = chargement_hardfit_()
 
-    sortie.update(job_type=predictor.predict(text_cv)[0][0])
+    sortie.update(job_type="unkwon")
 
     sortie.update(parcours_scolaire=recreate_experience_school(sortie, text_cv))
 
@@ -2655,7 +2665,7 @@ def parsing_joboffer_local(text_cv: str) -> dict:
         x for x in list(filter(None, transform(text_cv))) if not has_useless_text(x)
     ]
 
-    predictor = chargement_hardfit_()
+    # predictor = chargement_hardfit_()
 
     base = [listed_text_cv[i : i + 32] for i in range(0, len(listed_text_cv), 32)]
 
@@ -2733,7 +2743,7 @@ def parsing_joboffer_local(text_cv: str) -> dict:
     sortie.update(post=clean_task(clean_task(clean_task(clean_task(sortie["post"])))))
     sortie.update(parcours_pro=recreate_experience(sortie, text_cv)),
 
-    sortie.update(job_types=predictor.predict(text_cv)[0][0])
+    sortie.update(job_types="uknow")
 
     sortie = traiter_skills_dict(sortie)
 
