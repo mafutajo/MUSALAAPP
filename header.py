@@ -138,7 +138,6 @@ def header() -> str:
                 "Accueil",
                 "The Market",
                 "Job Finder",
-                "Job Fit",
                 "About Nest",
             ],
             icons=[
