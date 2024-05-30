@@ -2062,7 +2062,7 @@ def afficher_offres_emploi(
             <style>
                 .info-container {{
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background-color: #E8F0FE; /* Un bleu clair pour un aspect frais et accueillant */
+                    background-color: #fde9e5; /* Un bleu clair pour un aspect frais et accueillant */
                     border-left: 5px solid #1B4F72; /* Une bordure bleu foncé pour l'élégance */
                     padding: 20px;
                     margin-bottom: 20px;
@@ -2087,7 +2087,7 @@ def afficher_offres_emploi(
                     width: max-content;
                     margin: 20px auto; /* Centrage du bouton */
                     padding: 10px 20px;
-                    background-color: #1B4F72; /* Bleu foncé pour le bouton */
+                    background-color: #fde9e5; /* Bleu foncé pour le bouton */
                     color: #ffffff; /* Texte blanc pour le contraste */
                     border-radius: 5px; /* Bords arrondis pour le bouton */
                     text-align: center;
