@@ -2212,7 +2212,7 @@ def afficher_infos_candidat(data):
     <style>
         .candidat-container {{
             font-family: Arial, sans-serif;
-            background-color: #E8F0FE; /* Fond gris clair */
+            background-color: #d0c1c7; /* Fond gris clair */
             border-radius: 20px;
             box-shadow: 0px 8px 8px rgba(0,0,0,0.1); /* Ombre plus douce */
             padding: 20px;
