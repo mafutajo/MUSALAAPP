@@ -2071,14 +2071,14 @@ def afficher_offres_emploi(
                 }}
                 .info-title {{
                     font-size: 20px; /* Adaptation de la taille pour une meilleure lisibilité */
-                    color: #1B4F72; /* Reprend le bleu foncé pour une cohérence visuelle */
+                    color: :#302838; /* Reprend le bleu foncé pour une cohérence visuelle */
                     font-weight: 600;
                     margin-bottom: 15px; /* Un peu plus d'espace sous le titre */
                     text-align: center;
                 }}
                 .info-content {{
                     font-size: 16px; /* Légère augmentation pour l'accessibilité */
-                    color: #212529; /* Un gris foncé pour le texte, facile à lire */
+                    color: :#302838; /* Un gris foncé pour le texte, facile à lire */
                     text-align: center;
                     line-height: 1.5; /* Amélioration de l'espacement des lignes pour la lisibilité */
                 }}
@@ -2222,14 +2222,14 @@ def afficher_infos_candidat(data):
         .candidat-title {{
             font-size: 24px;
             font-weight: bolder;
-            color: #1B4F72; /* Bleu Musala */
+            color: #302838; /* Bleu Musala */
             margin-bottom: 20px;
         }}
         .candidat-section {{
             margin-bottom: 15px;
         }}
         .candidat-section-title {{
-            color: #1B4F72; /* Bleu Musala */
+            color: #302838; /* Bleu Musala */
             font-size: 18px;
             margin-bottom: 10px;
             font-weight: bold;
