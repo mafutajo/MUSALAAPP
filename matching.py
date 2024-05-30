@@ -143,7 +143,7 @@ def generate_gauge(note, seuil_incomplet=100, piliers_incomplets=None):
                 content: '';
                 width: 80%;
                 height: 80%;
-                background-color: #fff;
+                background-color: #fde9e5;
                 border-radius: 50%;
                 position: absolute;
                 border-color:rgb(75,98,133);
@@ -184,7 +184,7 @@ def clarifier_nom(nom_micro):
         "chefprojet": "Chef de projet",
     }
 
-    return noms_clairs.get(nom_micro, "Nom non trouvé")
+    return noms_clairs.get(nom_micro, "Technique")
 
 
 def inverser_clarification(nom_clair):
@@ -1953,7 +1953,7 @@ def afficher_offres_emploi(
         st.session_state.indices_selectionnes = []
 
     if "region_selectionnee" not in st.session_state:
-        st.session_state.region_selectionnee = region_prospect
+        st.session_state.region_selectionnee = "Toutes les régions"
 
     if "page_actuelle" not in st.session_state:
         st.session_state.page_actuelle = 1
