@@ -670,7 +670,7 @@ def retribution_HS(top_hard_skills, selected_name, median, moyenne):
 
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">HARD SKILLS</h2>
             </div>
             """
@@ -724,7 +724,7 @@ def retribution_SS(top_hard_skills, selected_name, median_ss, moyenne_ss):
 
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">SOFT SKILLS</h2>
             </div>
             """
@@ -776,7 +776,7 @@ def retribution_DIPL(filtered_data):
 
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">DIPLOME</h2>
             </div>
             """
@@ -829,7 +829,7 @@ def retribution_LANGUE(filtered_data):
 
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">LANGUE</h2>
             </div>
             """
@@ -878,7 +878,7 @@ def retribution_TACHE(filtered_data):
 
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">TACHES</h2>
             </div>
             """
@@ -935,7 +935,7 @@ def retribution_EXP(filtered_data):
 
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">EXPÉRIENCE</h2>
             </div>
             """
@@ -999,7 +999,7 @@ def entete(nom_metier, description_metier):
             align-items: center;
             width: 80%;  /* Largeur fixe relative à la largeur de la page ou de l'élément parent */
             min-height: 100px;  /* Hauteur minimum pour s'assurer que le conteneur ne soit pas trop petit */
-            background: #6200EE;  /* Couleur de fond */
+            background: #302838;  /* Couleur de fond */
             color: white;  /* Couleur du texte */
             margin: 20px auto;  /* Centrage et espace autour du conteneur */
             padding: 20px;  /* Espacement interne */
@@ -3327,7 +3327,7 @@ def evaluate_job_fit(talent_type, job_type):
     # In the first column, display the title "Job Category"
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">DOMAINE</h2>
             </div>
             """
@@ -3355,7 +3355,7 @@ def evaluate_stack_fit(match_result):
     # In the first column, display the title "Job Category"
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">STACK</h2>
             </div>
             """
@@ -3393,7 +3393,7 @@ def niveau_diplome(diplome_job, diplome_talent, note):
     # Display the title "Language Level" in the first column
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">FORMATION</h2>
             </div>
             """
@@ -3448,7 +3448,7 @@ def evaluate_language_detail(detail_langue, note):
 
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">LANGUE</h2>
             </div>
             """
@@ -3497,7 +3497,7 @@ def evaluate_taches(taches, note_globale):
 
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">Taches</h2>
             </div>
             """
@@ -3580,7 +3580,7 @@ def evaluate_soft_skills(detail_note_sskill, overall_note):
 
     with col1:
         title_html = """
-            <div style="background-color: #4D9FEC; padding: 10px; border-radius: 10px;">
+            <div style="background-color: #302838; padding: 10px; border-radius: 10px;">
                 <h2 style="color: white; text-align: center; font-weight: bold;">SOFT SKILLS</h2>
             </div>
             """

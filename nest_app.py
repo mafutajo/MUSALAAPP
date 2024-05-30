@@ -136,7 +136,7 @@ def page_presentation():
     )
 
     with col3:
-        st.image("nest_logo.png", use_column_width=True)
+        st.image("nest_logo-transformed.png", use_column_width=True)
 
     st.markdown("#")
     with col5:
@@ -144,7 +144,7 @@ def page_presentation():
             """
         <style>
             .custom-container {
-                background-color: #fff; /* Fond blanc */
+                background-color: #fde9e5; /* Fond blanc */
                 border-left: 5px solid rgb(113,224,203); /* Bordure violette à gauche */
                 padding: 20px;
                 margin: 10px 0;
@@ -157,7 +157,7 @@ def page_presentation():
                 margin-bottom: 10px; /* Espacement après le titre */
             }
             .custom-list {
-                color: #34495e;
+                color: #302838;
                 padding-left: 20px; /* Padding pour aligner avec le titre */
                 list-style: none; /* Pas de puces classiques */
                 margin-bottom: 0; /* Ajuster selon besoin */
@@ -197,8 +197,9 @@ def page_presentation():
         """
         <style>
             .custom-title2 {
+                background-color: #fde9e5; 
                 font-family: 'Helvetica Neue', Arial, sans-serif; /* Police moderne et propre */
-                color: #2874A6; /* Bleu moderne, mais vous pouvez choisir n'importe quelle couleur */
+                color:  #302838; /* Bleu moderne, mais vous pouvez choisir n'importe quelle couleur */
                 font-size: 2.2vw; /* Taille de la police grande pour plus d'impact */
                 text-align: center; /* Centrer le titre */
                 margin-top: 20px; /* Espacement du haut pour aérer */
@@ -222,9 +223,13 @@ def page_presentation():
         <style>
             .img-descriptif p {
                 font-size: 1.9vw;
+                color: #302838;
+                background-color: #fde9e5; 
             }
             .img-descriptif b {
                 font-weight: bold;
+                color: #302838;
+                background-color: #fde9e5; 
             }
         </style>
         
@@ -252,10 +257,15 @@ def page_presentation():
             }
             .img-descriptif b {
                 font-weight: bold;
+                
+            }
+            .img-descriptif  {
+                background-color: #fde9e5; 
+                
             }
         </style>
         
-        <div class="img-descriptif">
+        <div class="img-descriptif",style='font-size:1.3vw;'>
             <p style='font-size:1.3vw;'> <b>BALAKRISHNAN Aravinth </b> </p>
             <p style='font-size:1.3vw;font-weight:lighter;'> Data engineer</p>
             <ul>
@@ -289,8 +299,11 @@ if selected == "Job Finder":
     job_offer_parser()
 
 if selected == "Job Fit":
+    set_background_color()
     test_cv_page()
 if selected == "About Nest":
+    set_background_color()
+
     page_presentation()
 
 if selected == "The Market":

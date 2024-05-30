@@ -163,6 +163,7 @@ def header() -> str:
                 "nav-link": {
                     "font-size": "2.5vw",
                     "font-weight": "lighter",
+                    "background-color": "#fbebe3",
                     "text-align": "center",
                     "margin": "0px !important",
                     "--hover-color": "gray",
