@@ -1165,7 +1165,7 @@ def affichage_presentation(search_names):
         st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
         st.markdown(
-            '<h3 class="pretitle_">Découvrez ces métiers de la tech </h3>',
+            '<h3 class="pretitle_">Explorez les carrières passionnantes dans le domaine de la technologie !</h3>',
             unsafe_allow_html=True,
         )
         st.markdown("#")
