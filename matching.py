@@ -1569,6 +1569,12 @@ def determiner_niveau_experience(offre_emploi):
     return offre_emploi["niveau_experience"]
 
 
+@st.cache_resource(ttl=3600, show_spinner=False)
+def load_image(image_path):
+    img = Image.open(image_path)
+    return img
+
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def on_match_button_click(offres):
     # st.write(st.session_state)
@@ -1775,7 +1781,13 @@ def display_initial_message():
 
         coler = st.columns(2, gap="large")
         with coler[0]:
-            st.image("./static/candidat.jpg", use_column_width=True)
+            image_path = (
+                "./static/candidat.jpg"  # Assurez-vous que le chemin est correct
+            )
+            image = load_image(image_path)
+            st.image(image, caption="Aperçu du candidat", use_column_width=True)
+
+            # st.image("./static/candidat.jpg", use_column_width=True)
         # Contenu de l'analyse et du matching
 
         # Afficher le contenu HTML dans Streamlit

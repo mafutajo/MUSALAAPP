@@ -75,6 +75,7 @@ def header() -> str:
 
     # Utilisation du style défini pour l'en-tête et un sous-titre
     st.markdown(header_style, unsafe_allow_html=True)
+    # st.logo("nest_logo-transformed.png")
     st.markdown(
         '<div class="musala-headerx">NEST</div>',
         unsafe_allow_html=True,
@@ -251,7 +252,7 @@ def accueil():
         }
         .description:hover {
             transform: scale(1.15);
-            background-color: #f0f8ff; /* Couleur pastel */
+            background-color: #d0c1c7; /* Couleur pastel */
             color:#302838; 
         }
         
